@@ -1,0 +1,23 @@
+body {
+    background-color: #361f37;
+}
+
+main {
+    font-family: Arial, Helvetica, sans-serif;
+    border-style: solid;
+    border-radius: 20px; color: #361f37;
+    margin: auto;
+    margin-top: 10px;
+    padding: 2%;
+    text-align: center; 
+    box-shadow: 6px 6px;  
+    background-color: #361f37;
+    color: white;
+    max-width: 800px;
+}
+
+main > h1 {
+    border-radius: 10px;
+    border-style: solid;
+    padding: 2%;
+}
