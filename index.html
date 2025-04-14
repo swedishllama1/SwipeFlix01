@@ -2,11 +2,28 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SwipeFlix</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <div id="genre-menu">
+    <div id="genre-icon">🎞️</div>
+    <div id="genre-panel" class="hidden"></div>
+  </div>
+
+  <div id="user-menu">
+    <div id="user-icon">👤</div>
+
+    <div id="auth-panel">
+      <input type="text" id="username" placeholder="Username" />
+      <input type="password" id="password" placeholder="Password" />
+      <button id="login-btn">Log In</button>
+      <button id="register-btn">Register</button>
+      <button id="logout-btn" style="display:none;">Log Out</button>
+      <p id="auth-status"></p>
+    </div>
+  </div>
   <div id="app">
     <h1>SwipeFlix 🎬</h1>
     <div id="movie-container"></div>
@@ -14,7 +31,9 @@
       <button id="dislike-btn">👎</button>
       <button id="like-btn">👍</button>
     </div>
+    <div id="movie-info"></div>
   </div>
+
   <script src="script.js"></script>
 </body>
 </html>
