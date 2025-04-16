@@ -1,6 +1,6 @@
 const API_KEY = '72dd7b5804849fa9be8b72edfe8abdc1';
 const BASE_URL = 'https://api.themoviedb.org/3';
-const API_URL = "http://localhost:5000"; // Adjust if needed
+const API_URL = "http://localhost:5000";
 
 const container = document.getElementById('movie-container');
 const likeBtn = document.getElementById('like-btn');
