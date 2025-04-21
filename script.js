@@ -110,7 +110,7 @@ document.getElementById("login-btn").addEventListener("click", async () => {
   const data = await res.json();
   if (res.ok) {
 /**
- * Anger att användaren är inloggad och uppdaterar gränssnittet. (från version B)
+ * Anger att användaren är inloggad och uppdaterar gränssnittet. 
  */
     isLoggedIn = true;
     document.getElementById("auth-status").textContent = "Logged in!";
@@ -185,7 +185,7 @@ let genres = [];
  * // Automatisk init i slutet av filen
  * fetchGenres();
  */
-// Hämtar tillgängliga genrer från TMDb och visar dem. (från version B)
+// Hämtar tillgängliga genrer från TMDb och visar dem.
 async function fetchGenres() {
   try {
     const res = await fetch(`${BASE_URL}/genre/movie/list?api_key=${API_KEY}&language=en-US`);
@@ -206,7 +206,7 @@ async function fetchGenres() {
  *
  * @returns {void}
  */
-// Visar alla genrer i menyfältet. (från version B)
+// Visar alla genrer i menyfältet. 
 function displayGenres() {
   genrePanel.innerHTML = ''; // Tömmer genrelistan först.
 
@@ -245,7 +245,7 @@ function displayGenres() {
  * // Hämta 10 sidor actionfilmer (genre 28) och visa första kortet
  * fetchMovies(10, 28);
  */
-// Hämtar populära filmer (eller filtrerat på genre). (från version B)
+// Hämtar populära filmer (eller filtrerat på genre).
 async function fetchMovies(pages = 40, genreId = null) {
   const allMovies = [];
 
@@ -273,7 +273,7 @@ async function fetchMovies(pages = 40, genreId = null) {
  *
  * @returns {void}
  */
-// Visar nästa film i listan. (från version B)
+// Visar nästa film i listan.
 function showNextMovie() {
   if (currentIndex >= movies.length) {
     document.getElementById('movie-info').innerHTML = "<p>No more movies!</p>";
@@ -322,7 +322,7 @@ function showNextMovie() {
  * @param {object}      movie Filmdata kopplad till kortet.
  * @returns {void}
  */
-// Lägger till funktion för att dra kort åt höger/vänster. (från version B)
+// Lägger till funktion för att dra kort åt höger/vänster. 
 function addSwipeHandlers(card, movie) {
   let offsetX = 0;
   let isDragging = false;
@@ -378,7 +378,7 @@ function addSwipeHandlers(card, movie) {
  * @param {'left'|'right'} direction  "right" = gilla, "left" = skippa.
  * @returns {void}
  */
-// Animerar kortet när det swipas bort. (från version B)
+// Animerar kortet när det swipas bort. 
 function animateSwipe(card, direction) {
   card.classList.add(direction === 'right' ? 'liked' : 'disliked');
   card.style.transition = 'transform 0.5s ease, opacity 0.5s ease';
@@ -398,7 +398,7 @@ function animateSwipe(card, direction) {
  * @param {object} movie  Film­objektet som användaren gillar.
  * @returns {void}
  */
-// Skickar film till servern om användaren gillat den. (från version B)
+// Skickar film till servern om användaren gillat den. 
 function likeMovie(movie) {
   if (!isLoggedIn) {
     return;
@@ -420,7 +420,7 @@ function likeMovie(movie) {
  * @param {object} movie
  * @returns {void}
  */
-// Skriver ut i konsolen när filmen ignoreras. (från version B)
+// Skriver ut i konsolen när filmen ignoreras. 
 function discardMovie(movie) {
   console.log("Discarded:", movie.title);
 }
@@ -454,7 +454,7 @@ dislikeBtn.addEventListener("click", () => {
  * const arr = [1, 2, 3, 4];
  * shuffle(arr); // t.ex. [3, 1, 4, 2]
  */
-// Blandar om filmerna i listan. (från version B)
+// Blandar om filmerna i listan. 
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
