@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SwipeFlix</title>
+  <link rel="stylesheet" href="static/style.css" />
+</head>
+<body>
+  <div id="auth-box">
+    <h1>SwipeFlix 🎬</h1>
+    <h2>Sign in to SwipeFlix</h2>
+    
+    <form action="/login" method="post">
+      <input type="text" name="email" placeholder="Email" required>
+      <input type="text" name="username" placeholder="username" required>
+      <input type="password" name="password" placeholder="Password" required>
+      <button type="submit">Sign in</button>
+    </form>
+
+    <p>Don't have an account yet? Create one here.</p>
+    <form action="/register" method="post">
+      <input type="text" name="email" placeholder="Email" required>
+      <input type="text" name="username" placeholder="username" required>
+      <input type="password" name="password" placeholder="Password" required>
+      <button type="submit">Create account</button>
+    </form>
+
+    <div id="auth-status"></div>
+  </div>
+
+</body>
+</html>
+

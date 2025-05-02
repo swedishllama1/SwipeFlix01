@@ -225,3 +225,35 @@ body {
 .genre-item:hover {
   background-color: #4a4a70;
 }
+
+/*Auth panel styling */
+#auth-box{
+  text-align: center;
+}
+
+#auth-box h1{
+  font-size: 40px;
+}
+
+#auth-box form{
+display: flex;  
+flex-direction: column;
+margin-bottom: 20px;
+}
+
+#auth-box input{
+  border-radius: 5px;
+  font-size: 20px;
+  margin: 5px;
+  padding: 2px;
+}
+
+#auth-box button{
+  border-radius: 10px;
+  background-color:#2a2a40;
+  color: white;
+  font-size: 26px;
+  padding: 4px;
+  margin: 10px;
+  cursor: pointer;
+}
