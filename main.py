@@ -32,7 +32,7 @@ load_dotenv()
 
 tmdb_key = os.getenv("TMDB_API_KEY")
 
-#Databaskoppling
+#Database connection
 def get_db_connection():
     """
     Create and return a new database connection.
@@ -52,13 +52,25 @@ def get_db_connection():
     )
 
 #Double check if the connection to the database works
-"""if __name__ == "__main__":
+if __name__ == "__main__":
     conn = get_db_connection()
     if conn:
         print("✅ Anslutningen till databasen lyckades!")
         conn.close()
     else:
-        print("❌ Databasanslutning misslyckades.")"""
+        print("❌ Databasanslutning misslyckades.")
+
+####
+"""Provar om api-nyckeln kan döljas från javascript-filen"""
+
+@route('/api/genres')
+def get_genres():
+    tmdb_url = f"https://api.themoviedb.org/3/genre/movie/list?api_key={API_KEY}&language=en-US"
+    r = requests.get(tmdb_url)
+    response.content_type = 'application/json'
+    return r.content
+
+####
 
 @route('/auth_panel')
 def auth_panel():
