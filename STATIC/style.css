@@ -257,3 +257,35 @@ margin-bottom: 20px;
   margin: 10px;
   cursor: pointer;
 }
+
+/*Reg-box styling*/
+#reg-box{
+  text-align: center;
+}
+
+#reg-box h1{
+  font-size: 40px;
+}
+
+#reg-box form{
+display: flex;  
+flex-direction: column;
+margin-bottom: 20px;
+}
+
+#reg-box input{
+  border-radius: 5px;
+  font-size: 20px;
+  margin: 5px;
+  padding: 2px;
+}
+
+#reg-box button{
+  border-radius: 10px;
+  background-color:#2a2a40;
+  color: white;
+  font-size: 26px;
+  padding: 4px;
+  margin: 10px;
+  cursor: pointer;
+}

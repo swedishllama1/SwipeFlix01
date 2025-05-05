@@ -72,6 +72,8 @@ def get_genres():
 
 ####
 
+####
+"""Skapade routes in-progress"""
 @route('/auth_panel')
 def auth_panel():
     return template("auth_panel")
@@ -85,16 +87,53 @@ def login():
         #redirect('/')
     #Om inte: visa medelande att användaren inte finns    
 
+@route('/register')
+def register_new_user_input():
+    """INTE KLAR"""
+    
+    user_input_email = getattr(request.forms, "title")
+    user_input_username = getattr(request.forms, "content")
+    user_input_password = getattr(request.forms, "content")
 
-@route('/register', method="post")
-def register():
-    email = request.forms.get('email')
-    username = request.forms.get('username')
-    password = request.forms.get('password')
-    #Kolla om användaren finns i databasen, om inte:
-        #Lägg till användarinformation i databasen
-        #redirect('/')
-    #Om användaren finns visa medelande att användaren redan finns
+    articles.append({
+        "id" : article_id,
+        "title" : input_title,
+        "content" : input_content
+    })
+
+    my_file = open("articles.json", "w")
+    my_file.write(json.dumps(articles, indent=4))
+    my_file.close()
+
+    redirect("/")
+
+    return template("reg")
+
+@route('/register', method=["GET", "POST"])
+def register_user_input():
+    if request.method == "GET":
+        return template("register")  # renderar register.html
+
+    new_user_email_input = request.forms.get('email')
+    new_username_input = request.forms.get('username')
+    new_password_input = request.forms.get('password')
+
+    try:
+        with get_db_connection() as connection:  # Anslutningen öppnas här
+            with connection.cursor() as cursor:  # Cursorn öppnas här
+                # SQL-sats för att lägga till en leverantör
+                cursor.execute('''
+                    INSERT INTO users (email, username, password_hash)
+                    VALUES (%s, %s, %s)
+                ''', (new_user_email_input, new_username_input, new_password_input))
+                
+                # Spara ändringarna
+                connection.commit()
+                print(f"\nUser: {new_username_input} have been added to the DB")
+    except Exception as error:
+        print(f"Error occured when trying to add a Supplier: {error}")
+
+
 
 @route('/')
 def index():
@@ -104,5 +143,6 @@ def index():
 @route('/static/<filename>')
 def static_files(filename):
     return static_file(filename, root="STATIC")
+####
 
 run(host="127.0.0.1", port=8090, reloader=True) #Detta kan såklart ändras, fråga gruppen

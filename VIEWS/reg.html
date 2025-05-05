@@ -1,0 +1,28 @@
+<!--Registration-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SwipeFlix</title>
+  <link rel="stylesheet" href="static/style.css" />
+</head>
+<body>
+  <div id="reg-box">
+    <h1>SwipeFlix 🎬</h1>
+    <h2>Sign up for SwipeFlix</h2>
+
+    <p>Enter your details below.</p>
+    <form action="/register" method="post">
+      <input type="text" name="email" placeholder="Email" required>
+      <input type="text" name="username" placeholder="username" required>
+      <input type="password" name="password" placeholder="Password" required>
+      <button type="submit">Create account</button>
+    </form>
+
+    <div id="auth-status"></div>
+  </div>
+
+</body>
+</html>
