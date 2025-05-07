@@ -106,12 +106,8 @@ body {
   font-size: 26px;
   cursor: pointer;
   color: white;
-  transition: transform 0.2s ease;
+  /*transition: transform 0.2s ease;*/
   padding: 5px;
-}
-
-#user-icon:hover {
-  transform: scale(1.1);
 }
 
 #auth-panel {
@@ -158,10 +154,6 @@ body {
   margin: 0;
 }
 
-#user-menu:hover #auth-panel {
-  display: flex;
-}
-
 #user-menu.locked #auth-panel {
   display: flex;
 }
@@ -180,14 +172,11 @@ body {
   color: white;
   background: #333;
   border-radius: 50%;
-  transition: transform 0.2s ease;
+  /*transition: transform 0.2s ease;*/
   padding: 6px 8px;
   text-align: center;
 }
 
-#genre-icon:hover {
-  transform: scale(1.1);
-}
 
 #genre-panel {
   display: none;
@@ -202,10 +191,6 @@ body {
   position: absolute;
   left: 0;
   top: 100%;
-}
-
-#genre-menu:hover #genre-panel {
-  display: flex;
 }
 
 #genre-menu.locked #genre-panel {
