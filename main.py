@@ -1,36 +1,25 @@
-from bottle import route, run, template, static_file, request, redirect
-from dotenv import load_dotenv
-import os
-import psycopg2
-from psycopg2 import OperationalError, Error
-import os
+from bottle import Bottle, static_file, route, run, template, static_file, request, redirect, response, HTTPResponse, TEMPLATE_PATH
+from bottle import route, run
+from bottle import Bottle
 
-# Standard library imports
 from dotenv import load_dotenv
-
-# Third-party imports
-from bottle import (
-    route, run, template, request, static_file,
-    response, redirect, HTTPResponse, TEMPLATE_PATH
-)
 import psycopg2
+from psycopg2 import OperationalError, Error, errors
 from psycopg2.extras import RealDictCursor
-from psycopg2 import errors
 import bcrypt
 import requests
 import json
 
-# Load environment variables and configure templates
-BASE_DIR = os.path.dirname(__file__)
-TEMPLATE_PATH.insert(0, os.path.join(BASE_DIR, 'views'))
-load_dotenv()
-
-API_KEY = os.getenv('API_KEY')
-SECRET_KEY = os.getenv('SECRET_KEY')
+import os
 
 load_dotenv()
 
-tmdb_key = os.getenv("TMDB_API_KEY")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+STATIC_DIR = os.path.join(BASE_DIR, "static")   # gemener
+INDEX_FILE = os.path.join(BASE_DIR, "testindex.html")
+
+TMDB_API_KEY = os.getenv("TMDB_API_KEY")
+TMDB_BASE_URL = 'https://api.themoviedb.org/3'
 
 #Database connection
 def get_db_connection():
@@ -55,24 +44,62 @@ def get_db_connection():
 if __name__ == "__main__":
     conn = get_db_connection()
     if conn:
-        print("✅ Anslutningen till databasen lyckades!")
+        print("Connection successful!")
         conn.close()
     else:
-        print("❌ Databasanslutning misslyckades.")
+        print("Connection unsuccessful!")
 
 ####
-"""Provar om api-nyckeln kan döljas från javascript-filen"""
+#Testar göra en ny startsida som anropar API:et
+####
+@route('/')              # gratis redirect så du slipper skriva /start
+def root():
+    return redirect('/start')
+
+@route('/start')
+def index():
+    return static_file("testindex.html", root=BASE_DIR) 
 
 @route('/api/genres')
 def get_genres():
-    tmdb_url = f"https://api.themoviedb.org/3/genre/movie/list?api_key={API_KEY}&language=en-US"
-    r = requests.get(tmdb_url)
-    response.content_type = 'application/json'
-    return r.content
+    url = f"{TMDB_BASE_URL}/genre/movie/list"
+    params = {
+        "api_key": TMDB_API_KEY,
+        "language": "en-US"
+    }
+    r = requests.get(url, params=params)
+    return r.json()
 
+@route('/api/movies')
+def get_movies():
+    genre_id = request.query.get('genre_id')
+    page = request.query.get('page', default=1)
+    if genre_id:
+        url = f"{TMDB_BASE_URL}/discover/movie"
+        params = {
+            "api_key": TMDB_API_KEY,
+            "language": "en-US",
+            "page": page,
+            "with_genres": genre_id
+        }
+    else:
+        url = f"{TMDB_BASE_URL}/movie/popular"
+        params = {
+            "api_key": TMDB_API_KEY,
+            "language": "en-US",
+            "page": page
+        }
+    r = requests.get(url, params=params)
+    return r.json()
+
+@route('/start')
+def index():
+    full_path = os.path.join(BASE_DIR, "testindex.html")
+    print("→ försöker skicka:", full_path, os.path.exists(full_path))
+    return static_file("testindex.html", root=BASE_DIR)
 ####
 
-####
+
 """Skapade routes in-progress"""
 @route('/auth_panel')
 def auth_panel():
@@ -134,15 +161,9 @@ def register_user_input():
         print(f"Error occured when trying to add a Supplier: {error}")
 
 
-
-@route('/')
-def index():
-    return template("index")
-    #Om användaren redan är inloggad så visa bara en logga ut knapp i högra hörnet
-
 @route('/static/<filename>')
 def static_files(filename):
-    return static_file(filename, root="STATIC")
+    return static_file(filename, root=STATIC_DIR)
 ####
 
-run(host="127.0.0.1", port=8090, reloader=True) #Detta kan såklart ändras, fråga gruppen
+run(host="localhost", port=8090, reloader=True) #Detta kan såklart ändras, fråga gruppen

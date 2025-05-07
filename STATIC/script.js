@@ -1,5 +1,4 @@
-
-const API_URL = "http://localhost:5000";
+const API_URL = "";
 
 const container = document.getElementById('movie-container');
 const likeBtn = document.getElementById('like-btn');
@@ -7,7 +6,6 @@ const dislikeBtn = document.getElementById('dislike-btn');
 const userIcon = document.getElementById("user-icon");
 const authPanel = document.getElementById("auth-panel");
 const userMenu = document.getElementById("user-menu");
-
 
 const genreMenu = document.getElementById("genre-menu");
 const genreIcon = document.getElementById("genre-icon");
@@ -40,44 +38,12 @@ document.addEventListener("click", (e) => {
   }
 });
 
-document.getElementById("login-btn").addEventListener("click", async () => {
-  const username = document.getElementById("username").value;
-  const password = document.getElementById("password").value;
-
-  const res = await fetch(`${API_URL}/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ username, password })
-  });
-
-  const data = await res.json();
-  if (res.ok) {
-    isLoggedIn = true;
-    document.getElementById("auth-status").textContent = "Logged in!";
-    document.getElementById("logout-btn").style.display = "inline";
-  } else {
-    document.getElementById("auth-status").textContent = data.error;
-  }
+document.getElementById("login-btn").addEventListener("click", () => {
+  window.location.href = "/login";  // eller den route du använder för inloggning
 });
 
-document.getElementById("register-btn").addEventListener("click", async () => {
-  const username = document.getElementById("username").value;
-  const password = document.getElementById("password").value;
-
-  const res = await fetch(`${API_URL}/register`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ username, password })
-  });
-
-  const data = await res.json();
-  if (res.ok) {
-    document.getElementById("auth-status").textContent = "Registered! Now log in.";
-  } else {
-    document.getElementById("auth-status").textContent = data.error;
-  }
+document.getElementById("register-btn").addEventListener("click", () => {
+  window.location.href = "/register";  // eller den route du använder för registrering
 });
 
 document.getElementById("logout-btn").addEventListener("click", async () => {
@@ -94,7 +60,7 @@ let genres = [];
 
 async function fetchGenres() {
   try {
-    const res = await fetch(`${BASE_URL}/genre/movie/list?api_key=${API_KEY}&language=en-US`);
+    const res = await fetch("/api/genres");
     const data = await res.json();
     genres = data.genres || [];
     displayGenres();
@@ -111,7 +77,7 @@ function displayGenres() {
     genreItem.textContent = genre.name;
     genreItem.classList.add('genre-item');
     genreItem.addEventListener('click', () => {
-      currentIndex = 0; 
+      currentIndex = 0;
       fetchMovies(40, genre.id);
     });
     genrePanel.appendChild(genreItem);
@@ -121,9 +87,9 @@ function displayGenres() {
 async function fetchMovies(pages = 40, genreId = null) {
   const allMovies = [];
   for (let i = 1; i <= pages; i++) {
-    let url = `${BASE_URL}/movie/popular?api_key=${API_KEY}&language=en-US&page=${i}`;
+    let url = `${API_URL}/api/movies?page=${i}`;
     if (genreId) {
-      url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&language=en-US&page=${i}&with_genres=${genreId}`;
+      url += `&genre_id=${genreId}`;
     }
 
     const res = await fetch(url);
@@ -214,9 +180,7 @@ function addSwipeHandlers(card, movie) {
 function animateSwipe(card, direction) {
   card.classList.add(direction === 'right' ? 'liked' : 'disliked');
   card.style.transition = 'transform 0.5s ease, opacity 0.5s ease';
-  card.style.transform = `translateX(${
-    direction === 'right' ? '500px' : '-500px'
-  }) rotate(${direction === 'right' ? '45deg' : '-45deg'})`;
+  card.style.transform = `translateX(${direction === 'right' ? '500px' : '-500px'}) rotate(${direction === 'right' ? '45deg' : '-45deg'})`;
   card.style.opacity = '0';
 
   setTimeout(() => {
@@ -226,9 +190,7 @@ function animateSwipe(card, direction) {
 }
 
 function likeMovie(movie) {
-  if (!isLoggedIn) {
-    return;
-  }
+  if (!isLoggedIn) return;
   fetch(`${API_URL}/like`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -265,5 +227,4 @@ function shuffle(array) {
 }
 
 fetchGenres();
-
 fetchMovies();
