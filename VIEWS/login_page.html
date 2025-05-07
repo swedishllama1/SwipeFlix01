@@ -1,4 +1,4 @@
-<!--Registration-->
+<!--Inloggning-->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -9,20 +9,19 @@
   <link rel="stylesheet" href="static/style.css" />
 </head>
 <body>
-  <div id="reg-box">
+  <div id="auth-box">
     <h1>SwipeFlix 🎬</h1>
-    <h2>Sign up for SwipeFlix</h2>
-
-    <p>Enter your details below.</p>
-    <form action="/register" method="post">
+    <h2>Sign in to SwipeFlix</h2>
+    
+    <form action="/login" method="post">
       <input type="text" name="email" placeholder="Email" required>
       <input type="text" name="username" placeholder="username" required>
       <input type="password" name="password" placeholder="Password" required>
-      <button type="submit">Create account</button>
+      <button type="submit">Sign in</button>
     </form>
 
-    <div id="auth-status"></div>
   </div>
 
 </body>
 </html>
+

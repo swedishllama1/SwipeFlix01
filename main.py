@@ -101,9 +101,13 @@ def index():
 
 
 """Skapade routes in-progress"""
-@route('/auth_panel')
-def auth_panel():
-    return template("auth_panel")
+@route('/reg_page')
+def reg_page():
+    return template("reg_page")
+
+@route('/login_page')
+def login_page():
+    return template("login_page")
 
 @route('/login', method="post")
 def login():
