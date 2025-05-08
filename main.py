@@ -101,27 +101,36 @@ def reg_page():
 def login_page():
     return template("login_page")
 
-@route('/login', method="post")
+@route('/login', method=["GET", "POST"])
 def login():
+    if request.method == "GET":
+        return template("login_page")
+
     email_input = request.forms.get('email')
     password_input = request.forms.get('password')
+
+    if not email_input or not password_input:
+        return "Email and password are required."
 
     try:
         with get_db_connection() as connection:
             with connection.cursor() as cursor:
                 cursor.execute("""
-                SELECT password_hash FROM users WHERE email = %s
+                    SELECT password_hash FROM users WHERE email = %s
                 """, (email_input,))
                 user_password = cursor.fetchone()
-                
-                if user_password and bcrypt.checkpw(password_input.encode('utf-8'), user_password['password_hash'].encode('utf-8')):
-                    return None
+
+                if user_password:
+                    hashed_pw = user_password['password_hash']
+                    if bcrypt.checkpw(password_input.encode('utf-8'), hashed_pw.encode('utf-8')):
+                        return redirect('/')
+                    else:
+                        return "Incorrect email or password"
                 else:
                     return "Incorrect email or password"
-    except Exception as e:
-        print("Account not found. Please check your details and try again.")
+    except psycopg2.Error as e:
+        print(f"Databasfel vid inloggning: {e}")
         return template('login_page')
-    return redirect('/')
 
 
 
@@ -136,7 +145,8 @@ def register_user_input():
     new_username_input = request.forms.get('username')
     new_password_input = request.forms.get('password')
 
-    hashed_password = bcrypt.hashpw(new_password_input.encode('utf-8'), bcrypt.gensalt())
+    hashed_password = bcrypt.hashpw(new_password_input.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
     try:
         with get_db_connection() as connection:  # Anslutningen öppnas här
             with connection.cursor() as cursor:  # Cursorn öppnas här
