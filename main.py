@@ -24,12 +24,9 @@ TMDB_BASE_URL = 'https://api.themoviedb.org/3'
 #Database connection
 def get_db_connection():
     """
-    Create and return a new database connection.
+    Create and return a new database connection. (Alma)
 
     Uses environment variables for host, port, dbname, user, and password.
-    The cursor_factory is set to RealDictCursor for dict-like fetches.
-
-    :return: psycopg2 connection object
     """
     return psycopg2.connect(
         host=os.getenv('DB_HOST'),
@@ -52,12 +49,14 @@ if __name__ == "__main__":
 ####
 #Testar göra en ny startsida som anropar API:et
 ####
-@route('/')              # gratis redirect så du slipper skriva /start
+@route('/')
 def root():
+    """Rendering SwipeFlixes homepage (Alma)"""
     return template("index")
 
 @route('/api/genres')
 def get_genres():
+    """Import genres from API (Alma)"""
     url = f"{TMDB_BASE_URL}/genre/movie/list"
     params = {
         "api_key": TMDB_API_KEY,
@@ -68,6 +67,8 @@ def get_genres():
 
 @route('/api/movies')
 def get_movies():
+    """Import movies from API (Alma)"""
+
     genre_id = request.query.get('genre_id')
     page = request.query.get('page', default=1)
     if genre_id:
@@ -88,11 +89,6 @@ def get_movies():
     r = requests.get(url, params=params)
     return r.json()
 
-@route('/start')
-def index():
-    full_path = os.path.join(BASE_DIR, "testindex.html")
-    print("→ försöker skicka:", full_path, os.path.exists(full_path))
-    return static_file("testindex.html", root=BASE_DIR)
 ####
 
 
@@ -114,30 +110,11 @@ def login():
         #redirect('/')
     #Om inte: visa medelande att användaren inte finns    
 
-@route('/register')
-def register_new_user_input():
-    """INTE KLAR"""
-    
-    user_input_email = getattr(request.forms, "title")
-    user_input_username = getattr(request.forms, "content")
-    user_input_password = getattr(request.forms, "content")
-
-    articles.append({
-        "id" : article_id,
-        "title" : input_title,
-        "content" : input_content
-    })
-
-    my_file = open("articles.json", "w")
-    my_file.write(json.dumps(articles, indent=4))
-    my_file.close()
-
-    redirect("/")
-
-    return template("reg")
 
 @route('/register', method=["GET", "POST"])
 def register_user_input():
+    """Import registration information, hash the password and save to the database (Alma)"""
+
     if request.method == "GET":
         return template("register")  # renderar register.html
 
@@ -145,20 +122,23 @@ def register_user_input():
     new_username_input = request.forms.get('username')
     new_password_input = request.forms.get('password')
 
+    hashed_password = bcrypt.hashpw(new_password_input.encode('utf-8'), bcrypt.gensalt())
     try:
         with get_db_connection() as connection:  # Anslutningen öppnas här
             with connection.cursor() as cursor:  # Cursorn öppnas här
-                # SQL-sats för att lägga till en leverantör
+                # SQL-sats för att lägga till en ny användare
                 cursor.execute('''
                     INSERT INTO users (email, username, password_hash)
                     VALUES (%s, %s, %s)
-                ''', (new_user_email_input, new_username_input, new_password_input))
+                ''', (new_user_email_input, new_username_input, hashed_password))
                 
                 # Spara ändringarna
                 connection.commit()
-                print(f"\nUser: {new_username_input} have been added to the DB")
+                print(f"\nUser: {new_username_input} has been added to the DB")
     except Exception as error:
         print(f"Error occured when trying to add a Supplier: {error}")
+    
+    return redirect ("/")
 
 
 @route('/static/<filename>')
