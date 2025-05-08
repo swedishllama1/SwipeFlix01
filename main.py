@@ -49,13 +49,6 @@ if __name__ == "__main__":
     else:
         print("Connection unsuccessful!")
 
-####
-#Testar göra en ny startsida som anropar API:et
-####
-@route('/')              # gratis redirect så du slipper skriva /start
-def root():
-    return template("index")
-
 @route('/api/genres')
 def get_genres():
     url = f"{TMDB_BASE_URL}/genre/movie/list"
@@ -88,13 +81,6 @@ def get_movies():
     r = requests.get(url, params=params)
     return r.json()
 
-@route('/start')
-def index():
-    full_path = os.path.join(BASE_DIR, "testindex.html")
-    print("→ försöker skicka:", full_path, os.path.exists(full_path))
-    return static_file("testindex.html", root=BASE_DIR)
-####
-
 
 """Skapade routes in-progress"""
 @route('/reg_page')
@@ -107,12 +93,26 @@ def login_page():
 
 @route('/login', method="post")
 def login():
-    email = request.forms.get('email')
-    username = request.forms.get('username')
-    password = request.forms.get('password')
-    #Kolla om användaren finns i databasen såfall:
-        #redirect('/')
-    #Om inte: visa medelande att användaren inte finns    
+    email_input = request.forms.get('email')
+    password_input = request.forms.get('password')
+
+    try:
+        with get_db_connection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                SELECT password_hash FROM users WHERE email = %s
+                """, (email_input,))
+                user_password = cursor.fetchone()
+                
+                if user_password and bcrypt.checkpw(password_input.encode('utf-8'), user_password['password_hash'].encode('utf-8')):
+                    return None
+                else:
+                    return "Incorrect email or password"
+    except Exception as e:
+        print("Account not found. Please check your details and try again.")
+        return template('login_page')
+    return redirect('/')
+
 
 @route('/register')
 def register_new_user_input():
