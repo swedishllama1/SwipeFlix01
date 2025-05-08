@@ -54,11 +54,7 @@ if __name__ == "__main__":
 ####
 @route('/')              # gratis redirect så du slipper skriva /start
 def root():
-    return redirect('/start')
-
-@route('/start')
-def index():
-    return static_file("testindex.html", root=BASE_DIR) 
+    return template("index")
 
 @route('/api/genres')
 def get_genres():
