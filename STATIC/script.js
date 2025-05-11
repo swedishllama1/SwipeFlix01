@@ -141,6 +141,11 @@ function addSwipeHandlers(card, movie) {
   const onDragStart = (e) => {
     isDragging = true;
     offsetX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+
+    document.addEventListener('mousemove', onDragMove);
+    document.addEventListener('mouseup', onDragEnd);
+    document.addEventListener('touchmove', onDragMove);
+    document.addEventListener('touchend', onDragEnd);
   };
 
   const onDragMove = (e) => {
@@ -153,10 +158,16 @@ function addSwipeHandlers(card, movie) {
   const onDragEnd = (e) => {
     if (!isDragging) return;
     isDragging = false;
+
     const endX = e.type.includes('touch')
       ? e.changedTouches[0].clientX
       : e.clientX;
     const diffX = endX - offsetX;
+    
+    document.removeEventListener('mousemove', onDragMove);
+    document.removeEventListener('mouseup', onDragEnd);
+    document.removeEventListener('touchmove', onDragMove);
+    document.removeEventListener('touchend', onDragEnd);
 
     if (diffX > 50) {
       likeMovie(movie);
@@ -165,16 +176,13 @@ function addSwipeHandlers(card, movie) {
       discardMovie(movie);
       animateSwipe(card, 'left');
     } else {
+      card.style.transition = 'transform 0.3s ease';
       card.style.transform = 'translateX(0px) rotate(0deg)';
     }
   };
 
   card.addEventListener('mousedown', onDragStart);
-  card.addEventListener('mousemove', onDragMove);
-  card.addEventListener('mouseup', onDragEnd);
   card.addEventListener('touchstart', onDragStart);
-  card.addEventListener('touchmove', onDragMove);
-  card.addEventListener('touchend', onDragEnd);
 }
 
 function animateSwipe(card, direction) {
