@@ -1,5 +1,6 @@
 const API_URL = "";
-
+let movieFetchController = null;
+let activeGenreId = null;
 const container = document.getElementById('movie-container');
 const likeBtn = document.getElementById('like-btn');
 const dislikeBtn = document.getElementById('dislike-btn');
@@ -39,11 +40,11 @@ document.addEventListener("click", (e) => {
 });
 
 document.getElementById("login-btn").addEventListener("click", () => {
-  window.location.href = "/login";  // eller den route du använder för inloggning
+  window.location.href = "/login";
 });
 
 document.getElementById("register-btn").addEventListener("click", () => {
-  window.location.href = "/register";  // eller den route du använder för registrering
+  window.location.href = "/register"; 
 });
 
 document.getElementById("logout-btn").addEventListener("click", async () => {
@@ -59,18 +60,28 @@ document.getElementById("logout-btn").addEventListener("click", async () => {
 let genres = [];
 
 async function fetchGenres() {
+  displayGenres(true);
+
   try {
     const res = await fetch("/api/genres");
     const data = await res.json();
     genres = data.genres || [];
+
     displayGenres();
+
+    fetchAdditionalGenres();
   } catch (err) {
     console.error("Error fetching genres:", err);
   }
 }
 
-function displayGenres() {
+function displayGenres(initial = false) {
   genrePanel.innerHTML = '';
+
+  if (genres.length === 0 && initial) {
+    genrePanel.innerHTML = '<div>Laddar genrer...</div>';
+    return;
+  }
 
   genres.forEach((genre) => {
     const genreItem = document.createElement('div');
@@ -78,27 +89,83 @@ function displayGenres() {
     genreItem.classList.add('genre-item');
     genreItem.addEventListener('click', () => {
       currentIndex = 0;
-      fetchMovies(40, genre.id);
+      fetchMovies(genre.id);
     });
     genrePanel.appendChild(genreItem);
   });
 }
-
-async function fetchMovies(pages = 40, genreId = null) {
-  const allMovies = [];
-  for (let i = 1; i <= pages; i++) {
-    let url = `${API_URL}/api/movies?page=${i}`;
-    if (genreId) {
-      url += `&genre_id=${genreId}`;
-    }
-
-    const res = await fetch(url);
+async function fetchAdditionalGenres() {
+  try {
+    const res = await fetch(`${API_URL}/api/genres/full`);
     const data = await res.json();
-    allMovies.push(...(data.results || []));
+    if (data.genres) {
+      genres = data.genres;
+      displayGenres();
+    }
+  } catch (err) {
+    console.error("Error fetching full genre list:", err);
+  }
+}
+async function fetchMovies(genreId = null) {
+  if (movieFetchController) {
+    movieFetchController.abort();
   }
 
-  movies = shuffle(allMovies);
-  showNextMovie();
+  movieFetchController = new AbortController();
+  const signal = movieFetchController.signal;
+
+  activeGenreId = genreId;
+
+  try {
+    let url = `${API_URL}/api/movies?page=1`;
+    if (genreId) url += `&genre_id=${genreId}`;
+
+    const res = await fetch(url, { signal });
+    const data = await res.json();
+    if (activeGenreId !== genreId) return;
+
+    movies = shuffle(data.results || []);
+    currentIndex = 0;
+    showNextMovie();
+
+    loadAdditionalMovies(genreId, signal);
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      console.log("Första sida avbröts.");
+    } else {
+      console.error("Fel vid hämtning av filmer:", err);
+    }
+  }
+}
+async function loadAdditionalMovies(genreId = null, signal) {
+  const additionalMovies = [];
+
+  for (let i = 2; i <= 40; i++) {
+    if (activeGenreId !== genreId) return;
+
+    let url = `${API_URL}/api/movies?page=${i}`;
+    if (genreId) url += `&genre_id=${genreId}`;
+
+    try {
+      const res = await fetch(url, { signal });
+      const data = await res.json();
+
+      if (activeGenreId !== genreId) return;
+
+      additionalMovies.push(...(data.results || []));
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        console.log(`Bakgrundsladdning av sida ${i} avbröts.`);
+        return;
+      } else {
+        console.error(`Fel vid hämtning av sida ${i}:`, err);
+      }
+    }
+  }
+
+  if (activeGenreId !== genreId) return;
+
+  movies.push(...shuffle(additionalMovies));
 }
 
 function showNextMovie() {
@@ -135,39 +202,41 @@ function showNextMovie() {
 }
 
 function addSwipeHandlers(card, movie) {
-  let offsetX = 0;
-  let isDragging = false;
+  let startX = 0;
+  let diffX  = 0;
+  let dragging = false;
 
-  const onDragStart = (e) => {
-    isDragging = true;
-    offsetX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+  const getClientX = (e) =>
+    e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
 
-    document.addEventListener('mousemove', onDragMove);
-    document.addEventListener('mouseup', onDragEnd);
-    document.addEventListener('touchmove', onDragMove);
-    document.addEventListener('touchend', onDragEnd);
+  const start = (e) => {
+    dragging = true;
+    startX = getClientX(e);
+    diffX  = 0;
+
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup',   end);
+    window.addEventListener('touchmove', move, { passive: false });
+    window.addEventListener('touchend',  end);
+    window.addEventListener('touchcancel', end);
   };
 
-  const onDragMove = (e) => {
-    if (!isDragging) return;
-    const currentX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
-    const diffX = currentX - offsetX;
+  const move = (e) => {
+    if (!dragging) return;
+    diffX = getClientX(e) - startX;
     card.style.transform = `translateX(${diffX}px) rotate(${diffX / 20}deg)`;
+    if (e.cancelable) e.preventDefault();
   };
 
-  const onDragEnd = (e) => {
-    if (!isDragging) return;
-    isDragging = false;
+  const end = () => {
+    if (!dragging) return;
+    dragging = false;
 
-    const endX = e.type.includes('touch')
-      ? e.changedTouches[0].clientX
-      : e.clientX;
-    const diffX = endX - offsetX;
-    
-    document.removeEventListener('mousemove', onDragMove);
-    document.removeEventListener('mouseup', onDragEnd);
-    document.removeEventListener('touchmove', onDragMove);
-    document.removeEventListener('touchend', onDragEnd);
+    window.removeEventListener('mousemove', move);
+    window.removeEventListener('mouseup',   end);
+    window.removeEventListener('touchmove', move);
+    window.removeEventListener('touchend',  end);
+    window.removeEventListener('touchcancel', end);
 
     if (diffX > 50) {
       likeMovie(movie);
@@ -176,13 +245,14 @@ function addSwipeHandlers(card, movie) {
       discardMovie(movie);
       animateSwipe(card, 'left');
     } else {
-      card.style.transition = 'transform 0.3s ease';
-      card.style.transform = 'translateX(0px) rotate(0deg)';
+      card.style.transition = 'transform 0.25s ease';
+      card.style.transform  = 'translateX(0) rotate(0)';
+      setTimeout(() => (card.style.transition = ''), 250);
     }
   };
 
-  card.addEventListener('mousedown', onDragStart);
-  card.addEventListener('touchstart', onDragStart);
+  card.addEventListener('mousedown', start);
+  card.addEventListener('touchstart', start, { passive: true });
 }
 
 function animateSwipe(card, direction) {
