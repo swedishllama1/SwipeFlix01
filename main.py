@@ -1,32 +1,37 @@
-from bottle import Bottle, static_file, route, run, template, static_file, request, redirect, response, HTTPResponse, TEMPLATE_PATH
-from bottle import route, run
-from bottle import Bottle
+# Standard library
+import json
+import os
 
+# Third-party libraries
+import bcrypt
+from bottle import (
+    Bottle, HTTPResponse, TEMPLATE_PATH, redirect, request, response,
+    route, run, static_file, template
+)
 from dotenv import load_dotenv
 import psycopg2
-from psycopg2 import OperationalError, Error, errors
+from psycopg2 import Error, OperationalError, errors
 from psycopg2.extras import RealDictCursor
-import bcrypt
 import requests
-import json
-
-import os
 
 load_dotenv()
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-STATIC_DIR = os.path.join(BASE_DIR, "static")   # gemener
-INDEX_FILE = os.path.join(BASE_DIR, "testindex.html")
+STATIC_DIR = os.path.join(BASE_DIR, "static")
+
 
 TMDB_API_KEY = os.getenv("TMDB_API_KEY")
 TMDB_BASE_URL = 'https://api.themoviedb.org/3'
 
-#Database connection
 def get_db_connection():
     """
-    Create and return a new database connection. (Alma)
+    Establishes and returns a database connection. (Alma)
 
     Uses environment variables for host, port, dbname, user, and password.
+
+    Returns:
+        psycopg2.connect: A connection to a PostgreSQL database
+        with RealDictCursor as a cursor.
     """
     return psycopg2.connect(
         host=os.getenv('DB_HOST'),
@@ -46,17 +51,22 @@ if __name__ == "__main__":
     else:
         print("Connection unsuccessful!")
 
-####
-#Testar göra en ny startsida som anropar API:et
-####
 @route('/')
 def root():
-    """Rendering SwipeFlixes homepage (Alma)"""
+    """Renders SwipeFlix's homepage (Alma)
+    
+    Returns:
+        str: Rendered HTML content of the 'index' template.
+    """
     return template("index")
 
 @route('/api/genres')
 def get_genres():
-    """Import genres from API (Alma)"""
+    """Fetches a list of movie genres from the TMDB API (Alma)
+    
+    Returns:
+        dict: A JSON-file containing data of the genres from TMDB
+    """
     url = f"{TMDB_BASE_URL}/genre/movie/list"
     params = {
         "api_key": TMDB_API_KEY,
@@ -67,7 +77,15 @@ def get_genres():
 
 @route('/api/movies')
 def get_movies():
-    """Import movies from API (Alma)"""
+    """Fetches movies from the TMDB API by genre or popularity (Alma)
+    
+    Query parameters:
+        genre_id: The genre ID to filter movies by.
+        page: The number of pages of results to fetch, default is 1.
+
+    Returns:
+        dict: A JSON-file containing movie data from TMDB.
+    """
 
     genre_id = request.query.get('genre_id')
     page = request.query.get('page', default=1)
@@ -89,20 +107,71 @@ def get_movies():
     r = requests.get(url, params=params)
     return r.json()
 
-####
-
-
-"""Skapade routes in-progress"""
 @route('/reg_page')
 def reg_page():
+    """ Renders the registration page containing a form. (Py)
+
+    Returns:
+        str: Rendered HTML content of the registration ('reg_page') template.
+    """
     return template("reg_page")
 
 @route('/login_page')
 def login_page():
+    """ Renders the login page containing a form. (Py)
+
+    Returns:
+        str: Rendered HTML content of the login ('login_page') template.
+    """
     return template("login_page")
+
+@route('/register', method=["GET", "POST"])
+def register_user_input():
+    """Handels user registration via GET and POST requests (Alma)
+    
+    GET: Renders the registration form where the user enters their email, chosen username and password.
+    POST: Collects user input, hashes the password and saves the user to the database.
+
+    Returns:
+        str: The rendered registration template or a redirect to the homepage after a successful registration.
+    """
+
+    if request.method == "GET":
+        return template("register")
+
+    new_user_email_input = request.forms.get('email')
+    new_username_input = request.forms.get('username')
+    new_password_input = request.forms.get('password')
+
+    hashed_password = bcrypt.hashpw(new_password_input.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+    try:
+        with get_db_connection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute('''
+                    INSERT INTO users (email, username, password_hash)
+                    VALUES (%s, %s, %s)
+                ''', (new_user_email_input, new_username_input, hashed_password))
+                
+                connection.commit()
+                print(f"\nUser: {new_username_input} has been added to the DB")
+    except Exception as error:
+        print(f"Error occured when trying to register a new user: {error}")
+    
+    return redirect ("/")
+
 
 @route('/login', method=["GET", "POST"])
 def login():
+    """Handles user login with GET and POST form requests (Py).
+    This route renders a login form and processes user authentication.
+
+    GET: Renders the login form where the user can enter email and password.
+    POST: Validates the input, compares the hashed password against the database and redirects to the homepage if authentication is successful.
+    
+    Returns:
+        str: The rendered login template (GET), a redirect to the homepage (successful login) or an error message string (failed login).
+    """
     if request.method == "GET":
         return template("login_page")
 
@@ -166,8 +235,16 @@ def register_user_input():
 
 
 @route('/static/<filename:path>')
+@route('/static/<filename>')
 def static_files(filename):
-    return static_file(filename, root=STATIC_DIR)
-####
+    """Sends back a static file (CSS, JavaScript or image)
+    
+    Args:
+        filename (str): The name of the file the user is trying to access.
 
-run(host="localhost", port=8090, reloader=True) #Detta kan såklart ändras, fråga gruppen
+    Returns:
+        HTTPResponse: The requested static file from the STATIC_DIR-folder.
+    """
+    return static_file(filename, root=STATIC_DIR)
+
+run(host="localhost", port=8090, reloader=True)
