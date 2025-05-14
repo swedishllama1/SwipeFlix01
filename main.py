@@ -165,7 +165,7 @@ def register_user_input():
     return redirect ("/")
 
 
-@route('/static/<filename>')
+@route('/static/<filename:path>')
 def static_files(filename):
     return static_file(filename, root=STATIC_DIR)
 ####

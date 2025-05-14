@@ -8,6 +8,7 @@ body {
   justify-content: center;
   align-items: center;
   flex-direction: column;
+  min-height: 100vh;
 }
 
 #app {
@@ -92,10 +93,11 @@ body {
   opacity: 1;
 }
 
-
 #user-menu {
-  z-index: 999;
-  display: inline-block;
+position:fixed;
+right: 20px;
+top: 20px;
+background-color: transparent;
 }
 
 #user-icon {
@@ -104,22 +106,35 @@ body {
   color: white;
   /*transition: transform 0.2s ease;*/
   padding: 5px;
+  z-index: 10;
+  position: relative;
 }
 
 #auth-panel {
   display: none;
-  background-color: #2a2a40;
+  background-color: rgb(11, 10, 10);
   padding: 15px;
   border-radius: 12px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
   flex-direction: column;
   gap: 10px;
-  margin-top: 10px;
-  width: 220px;
+  margin-top: 4px;
+  width: max-content;
   position: absolute;
-  right: 0;
-  top: 100%;
+  right: 0px;
+  top: 0px;
   transition: opacity 0.3s ease;
+  z-index: 1;
+}
+
+
+#login-btn{
+  margin-right: 50px;
+  font-size: 30px;
+}
+
+#register-btn{
+  font-size: 30px;
 }
 
 #auth-panel input {
@@ -127,12 +142,12 @@ body {
   border: none;
   border-radius: 8px;
   background-color: #3b3b55;
-  color: white;
+  color: rgb(255, 255, 255);
 }
 
 #auth-panel button {
   padding: 8px;
-  background-color: #4c4cff;
+  background-color:transparent;
   color: white;
   border: none;
   border-radius: 8px;
