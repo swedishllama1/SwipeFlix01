@@ -8,6 +8,15 @@
   <link rel="stylesheet" href="static/style.css" />
 </head>
 <body>
+
+  <div class="log-in-display">
+    % if username:
+        <p>Inloggad som: {{username}}</p>
+    % else:
+        <p><a href="/login_page">Logga in</a></p>
+    % end
+  </div>
+
   <div id="genre-menu">
     <div id="genre-icon">🎞️</div>
     <div id="genre-panel" class="hidden"></div>
@@ -21,7 +30,7 @@
     <div id="auth-panel">
       <a href="/login_page"><button id="login-btn">Log In</button></a>
       <a href="/reg_page"><button id="register-btn">Register</button></a>
-      <button id="logout-btn" style="display:none;">Log Out</button>
+      <button id="logout-btn">Log Out</button>
       <p id="auth-status"></p>
     </div>
     
