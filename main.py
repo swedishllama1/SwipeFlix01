@@ -8,6 +8,8 @@ from bottle import (
     Bottle, HTTPResponse, TEMPLATE_PATH, redirect, request, response,
     route, run, static_file, template
 )
+from bottle_login import LoginPlugin
+from beaker.middleware import SessionMiddleware
 from dotenv import load_dotenv
 import psycopg2
 from psycopg2 import Error, OperationalError, errors
@@ -22,6 +24,32 @@ STATIC_DIR = os.path.join(BASE_DIR, "static")
 
 TMDB_API_KEY = os.getenv("TMDB_API_KEY")
 TMDB_BASE_URL = 'https://api.themoviedb.org/3'
+
+SECRET_KEY = os.getenv("SECRET_KEY")
+app = Bottle()
+app.config['SECRET_KEY'] = SECRET_KEY
+login_plugin = LoginPlugin()
+app.install(login_plugin)
+
+session_opts = {
+    'session.type': 'memory',  
+    'session.cookie_expires': True,
+    'session.auto': True,
+    'session.secret': SECRET_KEY  
+}
+
+class User:
+    def __init__(self, user_id, username, email):
+        self.id = user_id
+        self.name = username
+        self.email = email
+
+    def get_id(self):
+        return str(self.id)
+
+    @property
+    def is_authenticated(self):
+        return True
 
 def get_db_connection():
     """
@@ -51,16 +79,25 @@ if __name__ == "__main__":
     else:
         print("Connection unsuccessful!")
 
-@route('/')
+@app.route('/')
 def root():
-    """Renders SwipeFlix's homepage (Alma)
-    
-    Returns:
-        str: Rendered HTML content of the 'index' template.
     """
-    return template("index")
+    Renders SwipeFlix's homepage. (Alma) (Py)
+    
+    If the user is not logged in, it returns the public 'index' template.
+    If the user is logged in, it returns a personalized welcome message.
 
-@route('/api/genres')
+    Returns:
+        str: Rendered HTML content or welcome message.
+    """
+    current_user = login_plugin.get_user()
+    name = current_user.name if current_user else None
+    if not current_user:
+        return template("index")  
+    else:
+        return template("index", name=name)
+
+@app.route('/api/genres')
 def get_genres():
     """Fetches a list of movie genres from the TMDB API (Alma)
     
@@ -75,7 +112,7 @@ def get_genres():
     r = requests.get(url, params=params)
     return r.json()
 
-@route('/api/movies')
+@app.route('/api/movies')
 def get_movies():
     """Fetches movies from the TMDB API by genre or popularity (Alma)
     
@@ -107,7 +144,7 @@ def get_movies():
     r = requests.get(url, params=params)
     return r.json()
 
-@route('/reg_page')
+@app.route('/reg_page')
 def reg_page():
     """ Renders the registration page containing a form. (Py)
 
@@ -116,7 +153,7 @@ def reg_page():
     """
     return template("reg_page")
 
-@route('/login_page')
+@app.route('/login_page')
 def login_page():
     """ Renders the login page containing a form. (Py)
 
@@ -125,7 +162,7 @@ def login_page():
     """
     return template("login_page")
 
-@route('/register', method=["GET", "POST"])
+@app.route('/register', method=["GET", "POST"])
 def register_user_input():
     """Handels user registration via GET and POST requests (Alma)
     
@@ -161,8 +198,8 @@ def register_user_input():
     return redirect ("/")
 
 
-@route('/login', method=["GET", "POST"])
-def login():
+@app.route('/login', method=["GET", "POST"])
+def login_user():
     """Handles user login with GET and POST form requests (Py).
     This route renders a login form and processes user authentication.
 
@@ -183,15 +220,18 @@ def login():
 
     try:
         with get_db_connection() as connection:
-            with connection.cursor() as cursor:
+            with connection.cursor(cursor_factory=RealDictCursor) as cursor:
                 cursor.execute("""
-                    SELECT password_hash FROM users WHERE email = %s
+                    SELECT id, username, password_hash FROM users WHERE email = %s
                 """, (email_input,))
-                user_password = cursor.fetchone()
+                user_data = cursor.fetchone()
+        
+                if user_data:
+                    hashed_pw = user_data['password_hash']
 
-                if user_password:
-                    hashed_pw = user_password['password_hash']
                     if bcrypt.checkpw(password_input.encode('utf-8'), hashed_pw.encode('utf-8')):
+                        user = User(user_data['id'], user_data['username'], email_input)
+                        login_plugin.login_user(user.id)
                         return redirect('/')
                     else:
                         return "Incorrect email or password"
@@ -201,9 +241,22 @@ def login():
         print(f"Databasfel vid inloggning: {e}")
         return template('login_page')
 
+@login_plugin.load_user
+def load_user_by_id(user_id):
+    """Loads a user from the database by ID, used by bottle-login to restore sessions (Py)"""
+    try:
+        with get_db_connection() as connection:
+            with connection.cursor(cursor_factory=RealDictCursor) as cursor:
+                cursor.execute("""SELECT id, username, email FROM users WHERE id = %s
+                """, (user_id,))
+                row = cursor.fetchone()
+                if row:
+                    return User(row['id'], row['username'], row['email'])
+    except Exception as e:
+        print(f"Fel vid laddning av användare: {e}")
+    return None
 
-
-@route('/register', method=["GET", "POST"])
+@app.route('/register', method=["GET", "POST"]) #Denna funktion ska väl tas bort
 def register_user_input():
     """Import registration information, hash the password and save to the database (Alma)"""
 
@@ -233,9 +286,12 @@ def register_user_input():
     
     return redirect ("/")
 
+@app.route('/logout')
+def logout():
+    login_plugin.logout_user()
+    return redirect('/login')
 
-@route('/static/<filename:path>')
-@route('/static/<filename>')
+@app.route('/static/<filename:path>')
 def static_files(filename):
     """Sends back a static file (CSS, JavaScript or image)
     
@@ -247,4 +303,7 @@ def static_files(filename):
     """
     return static_file(filename, root=STATIC_DIR)
 
-run(host="localhost", port=8090, reloader=True)
+app_with_sessions = SessionMiddleware(app, session_opts)
+
+if __name__ == "__main__":
+    run(app=app_with_sessions, host="localhost", port=8090, reloader=True)
