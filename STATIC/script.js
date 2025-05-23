@@ -15,7 +15,7 @@ const genrePanel = document.getElementById("genre-panel");
 let movies = [];
 let currentIndex = 0;
 let currentCard = null;
-let isLoggedIn = false;
+let isLoggedIn = true;  // För att tvinga testläge
 
 userIcon.addEventListener("click", (e) => {
   e.stopPropagation();

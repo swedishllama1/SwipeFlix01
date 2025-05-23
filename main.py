@@ -202,6 +202,52 @@ def login():
     except psycopg2.Error as e:
         print(f"Databasfel vid inloggning: {e}")
         return template('login_page')
+    
+
+@route('/like', method='POST')
+def like_movie():
+    username = request.get_cookie("username", secret=os.getenv("COOKIE_SECRET"))
+    print("===> COOKIE username:", username)
+
+    if not username:
+        return HTTPResponse(status=401, body="Ingen användare inloggad")
+
+    data = request.json
+    print("===> INKOMMANDE JSON:", data)
+
+    movie_id = data.get("id")
+    title = data.get("title")
+    poster_path = data.get("poster_path")
+
+    if not movie_id or not title:
+        print("===> Fel: saknar id eller title")
+        return HTTPResponse(status=400, body="Incomplete movie data")
+
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cursor:
+                # Hämta användarens ID
+                cursor.execute("SELECT id FROM users WHERE username = %s", (username,))
+                user = cursor.fetchone()
+                print("===> User från DB:", user)
+
+                if not user or not user.get("id"):
+                    return HTTPResponse(status=404, body="Användare saknas")
+
+                # Spara filmen
+                cursor.execute("""
+                    INSERT INTO user_movies (user_id, movie_id, title, poster_path, liked)
+                    VALUES (%s, %s, %s, %s, TRUE)
+                """, (user["id"], movie_id, title, poster_path))
+
+                conn.commit()
+                print("===> Film sparad")
+
+        return {"message": "Film gillad och sparad"}
+    except Exception as e:
+        print("===> Fel vid INSERT:", e)
+        return HTTPResponse(status=500, body="Server error")
+
 
 @route('/logout')
 def logout():
