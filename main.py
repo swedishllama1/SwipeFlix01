@@ -23,8 +23,6 @@ SECRET = os.getenv("COOKIE_SECRET")
 TMDB_API_KEY = os.getenv("TMDB_API_KEY")
 TMDB_BASE_URL = 'https://api.themoviedb.org/3'
 
-print("Laddad API-nyckel:", os.getenv("TMDB_API_KEY"))
-
 def get_db_connection():
     """
     Establishes and returns a database connection. (Alma)
