@@ -39,23 +39,6 @@ document.addEventListener("click", (e) => {
   }
 });
 
-document.getElementById("login-btn").addEventListener("click", () => {
-  window.location.href = "/login";
-});
-
-document.getElementById("register-btn").addEventListener("click", () => {
-  window.location.href = "/register"; 
-});
-
-document.getElementById("logout-btn").addEventListener("click", async () => {
-  await fetch(`${API_URL}/logout`, {
-    method: "POST",
-    credentials: "include"
-  });
-  isLoggedIn = false;
-  document.getElementById("auth-status").textContent = "Logged out";
-  document.getElementById("logout-btn").style.display = "none";
-});
 
 let genres = [];
 
