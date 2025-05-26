@@ -12,19 +12,19 @@
   <div class="log-in-display">
     % if username:
         <p>Inloggad som: {{username}}</p>
-    % else:
-        <p><a href="/login_page">Logga in</a></p>
     % end
   </div>
 
   <div id="genre-menu">
-    <div id="genre-icon">🎞️</div>
+    <div id="genre-icon">
+      <img src="/static/img/menu1.jpg" alt="A user icon" width="50" height="50">
+    </div>
     <div id="genre-panel" class="hidden"></div>
   </div>
 
   <div id="user-menu">
     <div id="user-icon">
-      <img src="/static/img/user_icon3.jpg" alt="A user icon" width="50" height="50">
+      <img src="/static/img/user_icon1.jpg" alt="A user icon" width="50" height="50">
     </div>
 
     <div id="auth-panel">
@@ -39,7 +39,9 @@
   </div>
 
   <div id="app">
-    <h1>SwipeFlix 🎬</h1>
+    <h1>SwipeFlix 
+        <img src="/static/img/logga2.jpg" alt="SwipeFlix logo" width="70" height="70" style="vertical-align: middle;">
+    </h1>
     <div id="movie-container"></div>
     <div id="controls">
       <button id="dislike-btn">👎</button>

@@ -15,6 +15,11 @@ body {
   text-align: center;
   max-width: 360px;
   padding: 10px;
+  margin-top: 0px;
+}
+
+#app h1{
+  padding: 0px;
 }
 
 #movie-container {
@@ -188,16 +193,8 @@ background-color: transparent;
 }
 
 #genre-icon {
-  font-size: 26px;
   cursor: pointer;
-  color: white;
-  background: #333;
-  border-radius: 50%;
-  /*transition: transform 0.2s ease;*/
-  padding: 6px 8px;
-  text-align: center;
 }
-
 
 #genre-panel {
   display: none;
@@ -303,7 +300,22 @@ margin-bottom: 20px;
   align-items: flex-start;
   justify-content: flex-start;
   padding: 120px;
-  padding-left: 250px;
+}
+
+#profile-page #home-btn{
+  color: antiquewhite;
+  text-decoration: none;
+  font-size: 20px;
+  padding: 3px;
+  border-radius: 3px;
+}
+
+#profile-page #home-btn:hover{
+    background-color: #4a4a70;
+}
+
+#profile{
+  padding-left: 100px;
 }
 
 #profile > h1{
@@ -318,23 +330,29 @@ margin-bottom: 20px;
 }
 
 #username > img{
-  margin-top: 58px;
+  margin-top: 61px;
 }
 
 #profile> p{
-  font-size: 25px;
+  font-size: 22px;
   color: white;
   margin-top: 0px;
 }
 
-#profile-page#logout-btn{
-  font-size: 25px;
+#profile-page #logout-btn{
+  font-size: 20px;
   margin-top: 100px;
-
+  margin-left: 100px;
+  padding: 3px;
+  border-radius: 7px;
+  background-color: #333;
+  color: rgb(243, 244, 245);
+  cursor: pointer;
 }
 
 #liked-movies > h2{
   color:rgb(141, 123, 23);
   font-size: 27px;
   text-decoration: underline;
+  padding-left: 100px;
 }
