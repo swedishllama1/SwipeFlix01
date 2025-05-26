@@ -23,6 +23,8 @@ SECRET = os.getenv("COOKIE_SECRET")
 TMDB_API_KEY = os.getenv("TMDB_API_KEY")
 TMDB_BASE_URL = 'https://api.themoviedb.org/3'
 
+print("Laddad API-nyckel:", os.getenv("TMDB_API_KEY"))
+
 def get_db_connection():
     """
     Establishes and returns a database connection. (Alma)
@@ -248,6 +250,30 @@ def like_movie():
         print("===> Fel vid INSERT:", e)
         return HTTPResponse(status=500, body="Server error")
 
+
+@route('/user_profile')
+def user_profile():
+    """ Renders the user profile containing user information and liked movies. (Py)
+
+    Returns:
+        str: Rendered HTML content of the user profile ('user_profile') template.
+    """
+    username = request.get_cookie("username", secret=os.getenv("COOKIE_SECRET"))
+    user_email = None
+    
+    try:
+        with get_db_connection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT email FROM users WHERE username = %s", (username,))
+                result = cursor.fetchone()
+                if result:
+                    user_email = result['email']
+    except Exception as e:
+        print(f"Error fetching email: {e}")
+        import traceback
+        traceback.print_exc()
+    
+    return template("user_profile", username=username, user_email=user_email)
 
 @route('/logout')
 def logout():

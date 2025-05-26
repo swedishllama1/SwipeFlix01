@@ -106,6 +106,7 @@ background-color: transparent;
   color: white;
   /*transition: transform 0.2s ease;*/
   padding: 5px;
+  margin-top: 10px;
   z-index: 10;
   position: relative;
 }
@@ -159,10 +160,19 @@ background-color: transparent;
   background-color: #6a6aff;
 }
 
-#auth-panel p {
-  font-size: 0.85rem;
-  color: #ddd;
-  margin: 0;
+#auth-panel > p {
+  margin-right: 50px;
+  margin-top: 0px;
+  font-size: 30px;
+}
+
+#auth-panel a{
+  text-decoration: none;
+  color: white; 
+}
+
+#auth-panel a:hover{
+  color:rgb(141, 123, 23) ;
 }
 
 #user-menu.locked #auth-panel {
@@ -286,4 +296,45 @@ margin-bottom: 20px;
   padding: 4px;
   margin: 10px;
   cursor: pointer;
+}
+
+/*userprofile styling*/
+#profile-page{
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 120px;
+  padding-left: 250px;
+}
+
+#profile > h1{
+  padding-bottom: 10px;
+}
+
+#username{
+  display: flex;
+  flex-direction: row;
+  font-size: 30px;
+  color: white;
+}
+
+#username > img{
+  margin-top: 58px;
+}
+
+#profile> p{
+  font-size: 25px;
+  color: white;
+  margin-top: 0px;
+}
+
+#profile-page#logout-btn{
+  font-size: 25px;
+  margin-top: 100px;
+
+}
+
+#liked-movies > h2{
+  color:rgb(141, 123, 23);
+  font-size: 27px;
+  text-decoration: underline;
 }
