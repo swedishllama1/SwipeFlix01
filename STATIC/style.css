@@ -295,6 +295,7 @@ margin-bottom: 20px;
   cursor: pointer;
 }
 
+<<<<<<< Updated upstream
 /*userprofile styling*/
 #profile-page{
   align-items: flex-start;
@@ -356,3 +357,27 @@ margin-bottom: 20px;
   text-decoration: underline;
   padding-left: 100px;
 }
+=======
+#liked-movies-section {
+  margin-top: 40px;
+  text-align: center;
+}
+
+#liked-movies-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.movie-tile {
+  width: 120px;
+  text-align: center;
+}
+
+.movie-tile img {
+  width: 100%;
+  border-radius: 8px;
+}
+>>>>>>> Stashed changes

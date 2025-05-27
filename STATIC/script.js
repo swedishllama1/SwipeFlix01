@@ -52,7 +52,7 @@ async function fetchGenres() {
 
     displayGenres();
 
-    fetchAdditionalGenres();
+    //fetchAdditionalGenres();
   } catch (err) {
     console.error("Error fetching genres:", err);
   }
@@ -289,3 +289,34 @@ function shuffle(array) {
 
 fetchGenres();
 fetchMovies();
+
+document.getElementById("show-liked-btn").addEventListener("click", async () => {
+  const section = document.getElementById("liked-movies-section");
+  const list = document.getElementById("liked-movies-list");
+  section.style.display = "block"; // Visa sektionen
+  list.innerHTML = "<p>Laddar gillade filmer...</p>";
+  console.log("Knappen klickades!");
+
+
+  try {
+    const res = await fetch("/api/liked", { credentials: "include" });
+    const data = await res.json();
+    if (data && data.movies && data.movies.length > 0) {
+      list.innerHTML = "";
+      data.movies.forEach((movie) => {
+        const card = document.createElement("div");
+        card.classList.add("movie-tile");
+        card.innerHTML = `
+          <img src="https://image.tmdb.org/t/p/w200${movie.poster_path || ''}" alt="Poster">
+          <p>${movie.title}</p>
+        `;
+        list.appendChild(card);
+      });
+    } else {
+      list.innerHTML = "<p>Inga gillade filmer än.</p>";
+    }
+  } catch (err) {
+    console.error("Fel vid hämtning av gillade filmer:", err);
+    list.innerHTML = "<p>Kunde inte hämta filmer.</p>";
+  }
+});

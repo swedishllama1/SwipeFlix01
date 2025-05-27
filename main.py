@@ -296,4 +296,35 @@ def static_files(filename):
     """
     return static_file(filename, root=STATIC_DIR)
 
+<<<<<<< Updated upstream
 run(host="localhost", port=8090, reloader=True)
+=======
+@route('/api/liked')
+def get_liked_movies():
+    username = request.get_cookie("username", secret=os.getenv("COOKIE_SECRET"))
+    if not username:
+        return HTTPResponse(status=401, body="Inte inloggad")
+
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT id FROM users WHERE username = %s", (username,))
+                user = cursor.fetchone()
+                if not user:
+                    return HTTPResponse(status=404, body="Användare hittades inte")
+
+                cursor.execute("""
+                    SELECT title, poster_path
+                    FROM user_movies
+                    WHERE user_id = %s AND liked = TRUE
+                    ORDER BY timestamp DESC
+                """, (user["id"],))
+                movies = cursor.fetchall()
+
+        return {"movies": movies}
+    except Exception as e:
+        print("Fel vid hämtning av gillade filmer:", e)
+        return HTTPResponse(status=500, body="Serverfel")
+
+run(host="localhost", port=8090, reloader=True)
+>>>>>>> Stashed changes

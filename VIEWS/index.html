@@ -26,8 +26,9 @@
     <div id="user-icon">
       <img src="/static/img/user_icon1.jpg" alt="A user icon" width="50" height="50">
     </div>
-
+  
     <div id="auth-panel">
+<<<<<<< Updated upstream
       % if username:
         <p><a href="/user_profile"><strong>{{username}}</strong></a></p>
         <a href="/logout"><button id="logout-btn">Logga ut</button></a>
@@ -37,6 +38,14 @@
       % end
     </div>
   </div>
+=======
+      <a href="/login_page"><button id="login-btn">Logga in</button></a>
+      <a href="/reg_page"><button id="register-btn">Registrera</button></a>
+      <button id="logout-btn">Logga ut</button>
+      <button id="show-liked-btn">Gillade filmer</button>
+      <p id="auth-status"></p>
+    </div>
+>>>>>>> Stashed changes
 
   <div id="app">
     <h1>SwipeFlix 
@@ -50,6 +59,11 @@
     <div id="movie-info"></div>
   </div>
 
+  <div id="liked-movies-section" style="display: none;">
+    <h2>Gillade filmer</h2>
+    <div id="liked-movies-list"></div>
+  </div>
+  
   <script src="static/script.js"></script>
 </body>
 </html>
