@@ -295,7 +295,6 @@ margin-bottom: 20px;
   cursor: pointer;
 }
 
-/*userprofile styling*/
 #profile-page{
   align-items: flex-start;
   justify-content: flex-start;
@@ -356,6 +355,7 @@ margin-bottom: 20px;
   text-decoration: underline;
   padding-left: 100px;
 }
+
 #liked-movies-section {
   margin-top: 40px;
   text-align: center;
