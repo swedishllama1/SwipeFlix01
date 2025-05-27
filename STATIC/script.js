@@ -286,8 +286,22 @@ function shuffle(array) {
   }
   return array;
 }
+document.addEventListener("keydown", (event) => {
+  if (!currentCard) return;
 
+  switch (event.key) {
+    case "ArrowRight":
+      likeMovie(movies[currentIndex]);
+      animateSwipe(currentCard, "right");
+      break;
+    case "ArrowLeft":
+      discardMovie(movies[currentIndex]);
+      animateSwipe(currentCard, "left");
+      break;
+  }
+});
 fetchGenres();
+<<<<<<< HEAD
 fetchMovies();
 
 document.getElementById("show-liked-btn").addEventListener("click", async () => {
@@ -320,3 +334,6 @@ document.getElementById("show-liked-btn").addEventListener("click", async () => 
     list.innerHTML = "<p>Kunde inte hämta filmer.</p>";
   }
 });
+=======
+fetchMovies();
+>>>>>>> Python_kod
