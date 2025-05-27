@@ -286,7 +286,20 @@ function shuffle(array) {
   }
   return array;
 }
+document.addEventListener("keydown", (event) => {
+  if (!currentCard) return;
 
+  switch (event.key) {
+    case "ArrowRight":
+      likeMovie(movies[currentIndex]);
+      animateSwipe(currentCard, "right");
+      break;
+    case "ArrowLeft":
+      discardMovie(movies[currentIndex]);
+      animateSwipe(currentCard, "left");
+      break;
+  }
+});
 fetchGenres();
 fetchMovies();
 
