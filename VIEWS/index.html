@@ -1,4 +1,4 @@
-<!---->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -28,24 +28,17 @@
     </div>
   
     <div id="auth-panel">
-<<<<<<< Updated upstream
       % if username:
         <p><a href="/user_profile"><strong>{{username}}</strong></a></p>
         <a href="/logout"><button id="logout-btn">Logga ut</button></a>
+        <button id="show-liked-btn">Gillade filmer</button>
       % else:
         <a href="/login_page"><button id="login-btn">Logga in</button></a>
         <a href="/reg_page"><button id="register-btn">Skapa konto</button></a>
       % end
     </div>
   </div>
-=======
-      <a href="/login_page"><button id="login-btn">Logga in</button></a>
-      <a href="/reg_page"><button id="register-btn">Registrera</button></a>
-      <button id="logout-btn">Logga ut</button>
-      <button id="show-liked-btn">Gillade filmer</button>
-      <p id="auth-status"></p>
-    </div>
->>>>>>> Stashed changes
+
 
   <div id="app">
     <h1>SwipeFlix 

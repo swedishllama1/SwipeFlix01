@@ -283,22 +283,6 @@ def logout():
     response.delete_cookie("username", path="/")
     return redirect("/")
 
-@route('/static/<filename:path>')
-@route('/static/<filename>')
-def static_files(filename):
-    """Sends back a static file (CSS, JavaScript or image)
-    
-    Args:
-        filename (str): The name of the file the user is trying to access.
-
-    Returns:
-        HTTPResponse: The requested static file from the STATIC_DIR-folder.
-    """
-    return static_file(filename, root=STATIC_DIR)
-
-<<<<<<< Updated upstream
-run(host="localhost", port=8090, reloader=True)
-=======
 @route('/api/liked')
 def get_liked_movies():
     username = request.get_cookie("username", secret=os.getenv("COOKIE_SECRET"))
@@ -326,5 +310,18 @@ def get_liked_movies():
         print("Fel vid hämtning av gillade filmer:", e)
         return HTTPResponse(status=500, body="Serverfel")
 
+@route('/static/<filename:path>')
+@route('/static/<filename>')
+def static_files(filename):
+    """Sends back a static file (CSS, JavaScript or image)
+    
+    Args:
+        filename (str): The name of the file the user is trying to access.
+
+    Returns:
+        HTTPResponse: The requested static file from the STATIC_DIR-folder.
+    """
+    return static_file(filename, root=STATIC_DIR)
+
+
 run(host="localhost", port=8090, reloader=True)
->>>>>>> Stashed changes
