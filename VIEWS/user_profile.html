@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SwipeFlix</title>
+  <link rel="stylesheet" href="static/style.css" />
+</head>
+<body id="profile-page">
+    <a href="/" id="home-btn">Homepage</a>
+    <div id="profile">
+        <div id="username">
+            %
+            <h1>{{username}}</h1>
+            % end
+            <img src="/static/img/user_icon1.jpg" alt="A user icon" width="55" height="55">
+        </div>
+        %
+        <p>{{user_email}}</p>
+        % end
+    </div>
+
+    <div id="liked-movies">
+        <h2>My movies</h2>
+    </div>
+    <a href="/logout"><button id="logout-btn">Logga ut</button></a>
+
+  <script src="static/script.js"></script>
+</body>
+</html>
+

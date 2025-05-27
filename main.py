@@ -18,7 +18,7 @@ load_dotenv()
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_DIR = os.path.join(BASE_DIR, "static")
-
+SECRET = os.getenv("COOKIE_SECRET")
 
 TMDB_API_KEY = os.getenv("TMDB_API_KEY")
 TMDB_BASE_URL = 'https://api.themoviedb.org/3'
@@ -58,7 +58,8 @@ def root():
     Returns:
         str: Rendered HTML content of the 'index' template.
     """
-    return template("index")
+    username = request.get_cookie("username", secret=os.getenv("COOKIE_SECRET"))
+    return template("index", username=username)
 
 @route('/api/genres')
 def get_genres():
@@ -185,13 +186,14 @@ def login():
         with get_db_connection() as connection:
             with connection.cursor() as cursor:
                 cursor.execute("""
-                    SELECT password_hash FROM users WHERE email = %s
+                    SELECT username, password_hash FROM users WHERE email = %s
                 """, (email_input,))
-                user_password = cursor.fetchone()
+                user_data = cursor.fetchone()
 
-                if user_password:
-                    hashed_pw = user_password['password_hash']
+                if user_data:
+                    hashed_pw = user_data['password_hash']
                     if bcrypt.checkpw(password_input.encode('utf-8'), hashed_pw.encode('utf-8')):
+                        response.set_cookie("username", user_data["username"], secret=os.getenv("COOKIE_SECRET"), path="/")
                         return redirect('/')
                     else:
                         return "Incorrect email or password"
@@ -200,39 +202,113 @@ def login():
     except psycopg2.Error as e:
         print(f"Databasfel vid inloggning: {e}")
         return template('login_page')
+    
 
+@route('/like', method='POST')
+def like_movie():
+    username = request.get_cookie("username", secret=os.getenv("COOKIE_SECRET"))
+    print("===> COOKIE username:", username)
 
+    if not username:
+        return HTTPResponse(status=401, body="Ingen användare inloggad")
 
-@route('/register', method=["GET", "POST"])
-def register_user_input():
-    """Import registration information, hash the password and save to the database (Alma)"""
+    data = request.json
+    print("===> INKOMMANDE JSON:", data)
 
-    if request.method == "GET":
-        return template("register")  # renderar register.html
+    movie_id = data.get("id")
+    title = data.get("title")
+    poster_path = data.get("poster_path")
 
-    new_user_email_input = request.forms.get('email')
-    new_username_input = request.forms.get('username')
-    new_password_input = request.forms.get('password')
-
-    hashed_password = bcrypt.hashpw(new_password_input.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    if not movie_id or not title:
+        print("===> Fel: saknar id eller title")
+        return HTTPResponse(status=400, body="Incomplete movie data")
 
     try:
-        with get_db_connection() as connection:  # Anslutningen öppnas här
-            with connection.cursor() as cursor:  # Cursorn öppnas här
-                # SQL-sats för att lägga till en ny användare
-                cursor.execute('''
-                    INSERT INTO users (email, username, password_hash)
-                    VALUES (%s, %s, %s)
-                ''', (new_user_email_input, new_username_input, hashed_password))
-                
-                # Spara ändringarna
-                connection.commit()
-                print(f"\nUser: {new_username_input} has been added to the DB")
-    except Exception as error:
-        print(f"Error occured when trying to add a Supplier: {error}")
-    
-    return redirect ("/")
+        with get_db_connection() as conn:
+            with conn.cursor() as cursor:
+                # Hämta användarens ID
+                cursor.execute("SELECT id FROM users WHERE username = %s", (username,))
+                user = cursor.fetchone()
+                print("===> User från DB:", user)
 
+                if not user or not user.get("id"):
+                    return HTTPResponse(status=404, body="Användare saknas")
+
+                # Spara filmen
+                cursor.execute("""
+                    INSERT INTO user_movies (user_id, movie_id, title, poster_path, liked)
+                    VALUES (%s, %s, %s, %s, TRUE)
+                """, (user["id"], movie_id, title, poster_path))
+
+                conn.commit()
+                print("===> Film sparad")
+
+        return {"message": "Film gillad och sparad"}
+    except Exception as e:
+        print("===> Fel vid INSERT:", e)
+        return HTTPResponse(status=500, body="Server error")
+
+
+@route('/user_profile')
+def user_profile():
+    """ Renders the user profile containing user information and liked movies. (Py)
+
+    Returns:
+        str: Rendered HTML content of the user profile ('user_profile') template.
+    """
+    username = request.get_cookie("username", secret=os.getenv("COOKIE_SECRET"))
+    user_email = None
+    
+    try:
+        with get_db_connection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT email FROM users WHERE username = %s", (username,))
+                result = cursor.fetchone()
+                if result:
+                    user_email = result['email']
+    except Exception as e:
+        print(f"Error fetching email: {e}")
+        import traceback
+        traceback.print_exc()
+    
+    return template("user_profile", username=username, user_email=user_email)
+
+@route('/logout')
+def logout():
+    """Logs out the user by deleting the username cookie and redirects to the homepage. (Alma)
+    
+    Returns:
+        str: A redirect that renders the homepage as the user logs out.
+    """
+    response.delete_cookie("username", path="/")
+    return redirect("/")
+
+@route('/api/liked')
+def get_liked_movies():
+    username = request.get_cookie("username", secret=os.getenv("COOKIE_SECRET"))
+    if not username:
+        return HTTPResponse(status=401, body="Inte inloggad")
+
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT id FROM users WHERE username = %s", (username,))
+                user = cursor.fetchone()
+                if not user:
+                    return HTTPResponse(status=404, body="Användare hittades inte")
+
+                cursor.execute("""
+                    SELECT title, poster_path
+                    FROM user_movies
+                    WHERE user_id = %s AND liked = TRUE
+                    ORDER BY timestamp DESC
+                """, (user["id"],))
+                movies = cursor.fetchall()
+
+        return {"movies": movies}
+    except Exception as e:
+        print("Fel vid hämtning av gillade filmer:", e)
+        return HTTPResponse(status=500, body="Serverfel")
 
 @route('/static/<filename:path>')
 @route('/static/<filename>')
@@ -246,5 +322,6 @@ def static_files(filename):
         HTTPResponse: The requested static file from the STATIC_DIR-folder.
     """
     return static_file(filename, root=STATIC_DIR)
+
 
 run(host="localhost", port=8090, reloader=True)
