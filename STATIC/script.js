@@ -1,21 +1,21 @@
 const API_URL = "";
 let movieFetchController = null;
 let activeGenreId = null;
+let movies = [];
+let currentIndex = 0;
+let currentCard = null;
+let isLoggedIn = true;
+let genres = [];
+
 const container = document.getElementById('movie-container');
 const likeBtn = document.getElementById('like-btn');
 const dislikeBtn = document.getElementById('dislike-btn');
 const userIcon = document.getElementById("user-icon");
 const authPanel = document.getElementById("auth-panel");
 const userMenu = document.getElementById("user-menu");
-
 const genreMenu = document.getElementById("genre-menu");
 const genreIcon = document.getElementById("genre-icon");
 const genrePanel = document.getElementById("genre-panel");
-
-let movies = [];
-let currentIndex = 0;
-let currentCard = null;
-let isLoggedIn = true;  // För att tvinga testläge
 
 userIcon.addEventListener("click", (e) => {
   e.stopPropagation();
@@ -39,9 +39,6 @@ document.addEventListener("click", (e) => {
   }
 });
 
-
-let genres = [];
-
 async function fetchGenres() {
   displayGenres(true);
 
@@ -52,7 +49,6 @@ async function fetchGenres() {
 
     displayGenres();
 
-    //fetchAdditionalGenres();
   } catch (err) {
     console.error("Error fetching genres:", err);
   }
@@ -306,10 +302,9 @@ fetchMovies();
 document.getElementById("show-liked-btn").addEventListener("click", async () => {
   const section = document.getElementById("liked-movies-section");
   const list = document.getElementById("liked-movies-list");
-  section.style.display = "block"; // Visa sektionen
+  section.style.display = "block";
   list.innerHTML = "<p>Laddar gillade filmer...</p>";
   console.log("Knappen klickades!");
-
 
   try {
     const res = await fetch("/api/liked", { credentials: "include" });
