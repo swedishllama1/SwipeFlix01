@@ -198,7 +198,7 @@ background-color: transparent;
 
 #genre-panel {
   display: none;
-  background-color: #2a2a40;
+  background-color: #000000;
   padding: 15px;
   border-radius: 12px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
@@ -217,7 +217,7 @@ background-color: transparent;
 
 .genre-item {
   padding: 8px;
-  background-color: #3b3b55;
+  background-color: #3c3c4e;
   border-radius: 8px;
   cursor: pointer;
   color: #ffffff;
@@ -226,7 +226,7 @@ background-color: transparent;
 }
 
 .genre-item:hover {
-  background-color: #4a4a70;
+  background-color: #272732;
 }
 
 /*Registrering och logga in sida styling */
