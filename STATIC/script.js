@@ -1,6 +1,8 @@
 const API_URL = "";
 let movieFetchController = null;
 let activeGenreId = null;
+let actionCooldown = false;
+
 const container = document.getElementById('movie-container');
 const likeBtn = document.getElementById('like-btn');
 const dislikeBtn = document.getElementById('dislike-btn');
@@ -214,7 +216,18 @@ function addSwipeHandlers(card, movie) {
   const end = () => {
     if (!dragging) return;
     dragging = false;
-
+    if (actionCooldown) return;
+    
+    if (diffX > 50) {
+      likeMovie(movie);
+      animateSwipe(card, 'right');
+      setCooldown();
+    } else if (diffX < -50) {
+      discardMovie(movie);
+      animateSwipe(card, 'left');
+      setCooldown();
+    }
+    
     window.removeEventListener('mousemove', move);
     window.removeEventListener('mouseup',   end);
     window.removeEventListener('touchmove', move);
@@ -268,15 +281,17 @@ function discardMovie(movie) {
 }
 
 likeBtn.addEventListener("click", () => {
-  if (!currentCard) return;
+  if (!currentCard || actionCooldown) return;
   likeMovie(movies[currentIndex]);
   animateSwipe(currentCard, "right");
+  setCooldown();
 });
 
 dislikeBtn.addEventListener("click", () => {
-  if (!currentCard) return;
+  if (!currentCard || actionCooldown) return;
   discardMovie(movies[currentIndex]);
   animateSwipe(currentCard, "left");
+  setCooldown();
 });
 
 function shuffle(array) {
@@ -287,21 +302,30 @@ function shuffle(array) {
   return array;
 }
 document.addEventListener("keydown", (event) => {
-  if (!currentCard) return;
+  if (!currentCard || actionCooldown) return;
 
   switch (event.key) {
     case "ArrowRight":
       likeMovie(movies[currentIndex]);
       animateSwipe(currentCard, "right");
+      setCooldown();
       break;
     case "ArrowLeft":
       discardMovie(movies[currentIndex]);
       animateSwipe(currentCard, "left");
+      setCooldown();
       break;
   }
 });
+
+function setCooldown() {
+  actionCooldown = true;
+  setTimeout(() => {
+    actionCooldown = false;
+  }, 500);
+}
+
 fetchGenres();
-<<<<<<< HEAD
 fetchMovies();
 
 document.getElementById("show-liked-btn").addEventListener("click", async () => {
@@ -334,6 +358,3 @@ document.getElementById("show-liked-btn").addEventListener("click", async () => 
     list.innerHTML = "<p>Kunde inte hämta filmer.</p>";
   }
 });
-=======
-fetchMovies();
->>>>>>> Python_kod
