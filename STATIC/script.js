@@ -2,6 +2,12 @@ const API_URL = "";
 let movieFetchController = null;
 let activeGenreId = null;
 let actionCooldown = false;
+let movies = [];
+let currentIndex = 0;
+let currentCard = null;
+let isLoggedIn = true;
+let genres = [];
+
 
 const container = document.getElementById('movie-container');
 const likeBtn = document.getElementById('like-btn');
@@ -9,15 +15,9 @@ const dislikeBtn = document.getElementById('dislike-btn');
 const userIcon = document.getElementById("user-icon");
 const authPanel = document.getElementById("auth-panel");
 const userMenu = document.getElementById("user-menu");
-
 const genreMenu = document.getElementById("genre-menu");
 const genreIcon = document.getElementById("genre-icon");
 const genrePanel = document.getElementById("genre-panel");
-
-let movies = [];
-let currentIndex = 0;
-let currentCard = null;
-let isLoggedIn = true;  // För att tvinga testläge
 
 userIcon.addEventListener("click", (e) => {
   e.stopPropagation();
@@ -40,9 +40,6 @@ document.addEventListener("click", (e) => {
     genreMenu.classList.remove("locked");
   }
 });
-
-
-let genres = [];
 
 async function fetchGenres() {
   displayGenres(true);
@@ -300,6 +297,14 @@ function shuffle(array) {
   }
   return array;
 }
+
+function setCooldown() {
+  actionCooldown = true;
+  setTimeout(() => {
+    actionCooldown = false;
+  }, 500);
+}
+
 document.addEventListener("keydown", (event) => {
   if (!currentCard || actionCooldown) return;
 
@@ -317,27 +322,27 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
-function setCooldown() {
-  actionCooldown = true;
-  setTimeout(() => {
-    actionCooldown = false;
-  }, 500);
-}
-
 fetchGenres();
 fetchMovies();
 
 document.getElementById("show-liked-btn").addEventListener("click", async () => {
   const section = document.getElementById("liked-movies-section");
   const list = document.getElementById("liked-movies-list");
-  section.style.display = "block"; // Visa sektionen
+
+  // Visa/Dölj
+  if (section.style.display === "block") {
+    section.style.display = "none";
+    return;
+  }
+
+  section.style.display = "block";
   list.innerHTML = "<p>Laddar gillade filmer...</p>";
   console.log("Knappen klickades!");
-
 
   try {
     const res = await fetch("/api/liked", { credentials: "include" });
     const data = await res.json();
+
     if (data && data.movies && data.movies.length > 0) {
       list.innerHTML = "";
       data.movies.forEach((movie) => {
@@ -346,8 +351,25 @@ document.getElementById("show-liked-btn").addEventListener("click", async () => 
         card.innerHTML = `
           <img src="https://image.tmdb.org/t/p/w200${movie.poster_path || ''}" alt="Poster">
           <p>${movie.title}</p>
+          <button class="remove-btn" data-id="${movie.movie_id}">🗑</button>
         `;
         list.appendChild(card);
+
+        card.querySelector(".remove-btn").addEventListener("click", async () => {
+          const confirmDelete = confirm("Vill du ta bort denna film från dina gillade?");
+          if (!confirmDelete) return;
+
+          try {
+            await fetch(`/api/unlike/${movie.movie_id}`, {
+              method: "DELETE",
+              credentials: "include"
+            });
+            card.remove(); // Ta bort från sidan direkt
+          } catch (err) {
+            console.error("Fel vid borttagning:", err);
+            alert("Kunde inte ta bort filmen.");
+          }
+        });
       });
     } else {
       list.innerHTML = "<p>Inga gillade filmer än.</p>";
