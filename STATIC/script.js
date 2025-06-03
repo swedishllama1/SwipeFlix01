@@ -302,6 +302,13 @@ fetchMovies();
 document.getElementById("show-liked-btn").addEventListener("click", async () => {
   const section = document.getElementById("liked-movies-section");
   const list = document.getElementById("liked-movies-list");
+
+  // Toggle: Visa/Dölj
+  if (section.style.display === "block") {
+    section.style.display = "none";
+    return;
+  }
+
   section.style.display = "block";
   list.innerHTML = "<p>Laddar gillade filmer...</p>";
   console.log("Knappen klickades!");
@@ -309,6 +316,7 @@ document.getElementById("show-liked-btn").addEventListener("click", async () => 
   try {
     const res = await fetch("/api/liked", { credentials: "include" });
     const data = await res.json();
+
     if (data && data.movies && data.movies.length > 0) {
       list.innerHTML = "";
       data.movies.forEach((movie) => {
@@ -317,8 +325,26 @@ document.getElementById("show-liked-btn").addEventListener("click", async () => 
         card.innerHTML = `
           <img src="https://image.tmdb.org/t/p/w200${movie.poster_path || ''}" alt="Poster">
           <p>${movie.title}</p>
+          <button class="remove-btn" data-id="${movie.movie_id}">🗑</button>
         `;
         list.appendChild(card);
+
+        // 🗑 Klick på ta bort-knappen
+        card.querySelector(".remove-btn").addEventListener("click", async () => {
+          const confirmDelete = confirm("Vill du ta bort denna film från dina gillade?");
+          if (!confirmDelete) return;
+
+          try {
+            await fetch(`/api/unlike/${movie.movie_id}`, {
+              method: "DELETE",
+              credentials: "include"
+            });
+            card.remove(); // Ta bort från sidan direkt
+          } catch (err) {
+            console.error("Fel vid borttagning:", err);
+            alert("Kunde inte ta bort filmen.");
+          }
+        });
       });
     } else {
       list.innerHTML = "<p>Inga gillade filmer än.</p>";
