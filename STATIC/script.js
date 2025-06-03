@@ -54,7 +54,6 @@ async function fetchGenres() {
 
     displayGenres();
 
-    //fetchAdditionalGenres();
   } catch (err) {
     console.error("Error fetching genres:", err);
   }
