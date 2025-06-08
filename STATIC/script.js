@@ -18,6 +18,8 @@ let movies = [];
 let currentIndex = 0;
 let currentCard = null;
 let isLoggedIn = true;  // För att tvinga testläge
+let lastSwipedMovie = null;
+let lastSwipeType = null;
 
 userIcon.addEventListener("click", (e) => {
   e.stopPropagation();
@@ -73,6 +75,9 @@ function displayGenres(initial = false) {
     genreItem.classList.add('genre-item');
     genreItem.addEventListener('click', () => {
       currentIndex = 0;
+      document.querySelectorAll('.genre-item').forEach(item => item.classList.remove('active-genre'));
+      genreItem.classList.add('active-genre');
+
       fetchMovies(genre.id);
     });
     genrePanel.appendChild(genreItem);
@@ -261,6 +266,9 @@ function addSwipeHandlers(card, movie) {
 }
 
 function animateSwipe(card, direction) {
+  lastSwipedMovie = movies[currentIndex];
+  lastSwipeType = direction;
+
   card.classList.add(direction === 'right' ? 'liked' : 'disliked');
   card.style.transition = 'transform 0.5s ease, opacity 0.5s ease';
   card.style.transform = `translateX(${direction === 'right' ? '500px' : '-500px'}) rotate(${direction === 'right' ? '45deg' : '-45deg'})`;
@@ -269,6 +277,7 @@ function animateSwipe(card, direction) {
   setTimeout(() => {
     currentIndex++;
     showNextMovie();
+    showUndoButton(); // visa ångraknapp
   }, 400);
 }
 
@@ -310,6 +319,17 @@ function shuffle(array) {
   }
   return array;
 }
+
+function showUndoButton() {
+  const undoBtn = document.getElementById("undo-btn");
+  if (!undoBtn) return;
+
+  undoBtn.style.display = "block";
+  setTimeout(() => {
+    undoBtn.style.display = "none";
+  }, 5000);
+}
+
 document.addEventListener("keydown", (event) => {
   if (!currentCard || actionCooldown) return;
 
@@ -336,6 +356,31 @@ function setCooldown() {
 
 fetchGenres();
 fetchMovies();
+
+document.getElementById("undo-btn").addEventListener("click", async () => {
+  if (!lastSwipedMovie || currentIndex === 0) return;
+
+  currentIndex--;
+  currentCard = null;
+  showNextMovie();
+
+  if (lastSwipeType === "right") {
+    try {
+      await fetch(`/api/unlike/${lastSwipedMovie.id}`, {
+        method: "DELETE",
+        credentials: "include"
+      });
+      console.log("Ångrade gillning.");
+    } catch (err) {
+      console.error("Kunde inte ångra like:", err);
+    }
+  }
+
+  lastSwipedMovie = null;
+  lastSwipeType = null;
+  document.getElementById("undo-btn").style.display = "none";
+});
+
 
 document.getElementById("show-liked-btn").addEventListener("click", async () => {
   const section = document.getElementById("liked-movies-section");

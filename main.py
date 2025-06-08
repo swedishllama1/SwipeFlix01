@@ -309,7 +309,6 @@ def like_movie():
         - 401: If the user is not logged in
         - 404: If the user is not If the user is not found in the database.
         - 500: If server error occurs.
-    
     """
     username = request.get_cookie("username", secret=os.getenv("COOKIE_SECRET"))
     print("===> COOKIE username:", username)
@@ -403,6 +402,11 @@ def get_liked_movies():
         - 401: if the user is not logged in.
         - 404: if the user is not found.
         - 500: if a server error occurs.
+    Retrieves all the movies the current logged in user has marked as liked. (Ellinor)
+
+    Returns: 
+        Dict: JSON object with list of all the liked movies, 
+        Or a error (HTTP) if user is not logged in or something fails.
     """
     username = request.get_cookie("username", secret=os.getenv("COOKIE_SECRET"))
     if not username:
@@ -421,13 +425,58 @@ def get_liked_movies():
                     FROM user_movies
                     WHERE user_id = %s AND liked = TRUE
                     ORDER BY timestamp DESC
-                """, (user["id"],))
+                    """, (user["id"],))
+
                 movies = cursor.fetchall()
 
         return {"movies": movies}
     except Exception as e:
-        print("Error when fetching liked movies:", e)
-        return HTTPResponse(status=500, body="Server error")
+        print("Fel vid hämtning av gillade filmer:", e)
+        return HTTPResponse(status=500, body="Serverfel")
+
+@route('/api/unlike/<movie_id:int>', method='DELETE')
+def unlike_movie(movie_id):
+    """
+Removes a movie from the user's "liked movies" list. (Ellinor)
+
+Endpoint: DELETE /api/unlike/<movie_id>
+
+Retrieves the logged-in user via cookies and updates the database.
+The movie with the given `movie_id` is marked as unliked but not deleted.
+The 'liked' field in the 'user_movies' table is set to false.
+
+Args:
+    movie_id (int): The ID of the movie to be removed from the liked list.
+
+Returns:
+    dict/HTTPResponse: A JSON message confirming the update, or an error message
+    if something went wrong.
+"""
+
+    username = request.get_cookie("username", secret=os.getenv("COOKIE_SECRET"))
+    if not username:
+        return HTTPResponse(status=401, body="Inte inloggad")
+
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT id FROM users WHERE username = %s", (username,))
+                user = cursor.fetchone()
+                if not user:
+                    return HTTPResponse(status=404, body="Användare saknas")
+
+                # Uppdaterar den gillade filmen som ''inte gillad''
+                cursor.execute("""
+                    UPDATE user_movies
+                    SET liked = FALSE
+                    WHERE user_id = %s AND movie_id = %s
+                """, (user["id"], movie_id))
+
+                conn.commit()
+                return {"message": "Filmen markerades som ogillad"}
+    except Exception as e:
+        print("Fel vid unlike:", e)
+        return HTTPResponse(status=500, body="Serverfel")
 
 @route('/static/<filename:path>')
 @route('/static/<filename>')
