@@ -15,10 +15,13 @@ const genreIcon = document.getElementById("genre-icon");
 const genrePanel = document.getElementById("genre-panel");
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 let movies = [];
 let currentIndex = 0;
 let currentCard = null;
 let isLoggedIn = true;  // För att tvinga testläge
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 let lastSwipedMovie = null;

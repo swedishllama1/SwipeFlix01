@@ -299,6 +299,7 @@ def movie_shown_to_database(user_id, movie_id, title, poster_path):
 def like_movie():
     """
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     Fetches the logged-in user from current cookie-session and inserts saved movies into a list. (Ellinor)
 
     This requires a logged-in user (using cookies) and movie data sent as JSON.
@@ -311,12 +312,17 @@ def like_movie():
         - 404: If the user is not If the user is not found in the database.
         - 500: If server error occurs.
 =======
+=======
+>>>>>>> Stashed changes
     Handles liking a movie and saves it to the users ''gillade filmer'' list. (Ellinor)
 
     Fetches the logged-in user from cookies and then inserts the movie data into ''user_movies'' table with liked = TRUE.
 
     Returns:
         dict/HTTPResponse: JSON affermative message or error message if something goes wrong.
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     """
     username = request.get_cookie("username", secret=os.getenv("COOKIE_SECRET"))
@@ -402,6 +408,7 @@ def logout():
 def get_liked_movies():
     """
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     Returns a list of movies the logged-in user has liked. (Ellinor)
 
     This requires the user to be logged in (using cookies).
@@ -414,12 +421,15 @@ def get_liked_movies():
         - 500: if a server error occurs.
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     Retrieves all the movies the current logged in user has marked as liked. (Ellinor)
 
     Returns: 
         Dict: JSON object with list of all the liked movies, 
         Or a error (HTTP) if user is not logged in or something fails.
     """
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
     username = request.get_cookie("username", secret=os.getenv("COOKIE_SECRET"))
     if not username:
@@ -468,6 +478,8 @@ Returns:
 
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     username = request.get_cookie("username", secret=os.getenv("COOKIE_SECRET"))
     if not username:
         return HTTPResponse(status=401, body="Inte inloggad")
@@ -483,16 +495,24 @@ Returns:
                 # Uppdaterar den gillade filmen som ''inte gillad''
                 cursor.execute("""
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                     UPDATE user_movies
                     SET liked = FALSE
                     WHERE user_id = %s AND movie_id = %s
                 """, (user["id"], movie_id))
 =======
+=======
+>>>>>>> Stashed changes
                     SELECT movie_id, title, poster_path
                     FROM user_movies
                     WHERE user_id = %s AND liked = TRUE
                     ORDER BY timestamp DESC
                     """, (user["id"],))
+<<<<<<< Updated upstream
+=======
+
+                movies = cursor.fetchall()
+>>>>>>> Stashed changes
 
                 movies = cursor.fetchall()
 >>>>>>> Stashed changes
