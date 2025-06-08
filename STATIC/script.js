@@ -149,6 +149,23 @@ async function loadAdditionalMovies(genreId = null, signal) {
   movies.push(...shuffle(additionalMovies));
 }
 
+function movieShown(movie) {
+  if (!isLoggedIn) return;
+  fetch(`${API_URL}/movie_shown`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({
+      movie_id: movie.id,
+      title: movie.title,
+      poster_path: movie.poster_path,
+    }),
+  })
+  .then(res => res.json())
+  .then(data => console.log("Movie shown saved:", data))
+  .catch(err => console.error("Error saving shown movie:", err));
+}
+
 function showNextMovie() {
   if (currentIndex >= movies.length) {
     document.getElementById('movie-info').innerHTML = "<p>No more movies!</p>";
@@ -157,6 +174,9 @@ function showNextMovie() {
   }
 
   const movie = movies[currentIndex];
+
+  movieShown(movie);
+  
   const card = document.createElement('div');
   card.className = 'movie-card';
 
@@ -360,6 +380,10 @@ document.getElementById("show-liked-btn").addEventListener("click", async () => 
           if (!confirmDelete) return;
 
           try {
+            if (!movie.id) {
+            console.error("Saknar movie.id när jag försöker unlike");
+            return;
+            }
             await fetch(`/api/unlike/${movie.movie_id}`, {
               method: "DELETE",
               credentials: "include"

@@ -78,7 +78,7 @@ def get_genres():
 
 @route('/api/movies')
 def get_movies():
-    """Fetches movies from the TMDB API by genre or popularity (Alma)
+    """Fetches movies from the TMDB API by genre or popularity and filters out recently shown movies (Alma)
     
     Query parameters:
         genre_id: The genre ID to filter movies by.
@@ -90,6 +90,7 @@ def get_movies():
 
     genre_id = request.query.get('genre_id')
     page = request.query.get('page', default=1)
+
     if genre_id:
         url = f"{TMDB_BASE_URL}/discover/movie"
         params = {
@@ -106,7 +107,33 @@ def get_movies():
             "page": page
         }
     r = requests.get(url, params=params)
-    return r.json()
+    tmdb_data = r.json()
+
+    username = request.get_cookie("username", secret=SECRET)
+    user_id = None
+    if username:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT id FROM users WHERE username = %s", (username,))
+                user = cur.fetchone()
+                if user:
+                    user_id = user['id']
+
+    if user_id and "results" in tmdb_data:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                SELECT movie_id FROM shown_movies
+                WHERE user_id = %s AND timestamp >= NOW() - INTERVAL '30 days'
+                """, (user_id,))
+                seen_movie_ids = {row['movie_id'] for row in cur.fetchall()}
+        
+        tmdb_data['results'] = [
+            movie for movie in tmdb_data['results']
+            if movie['id'] not in seen_movie_ids
+        ]
+
+    return tmdb_data
 
 @route('/reg_page')
 def reg_page():
@@ -202,7 +229,65 @@ def login():
     except psycopg2.Error as e:
         print(f"Databasfel vid inloggning: {e}")
         return template('login_page')
-    
+
+@route('/movie_shown', method='POST')
+def movie_shown():
+    """
+    Documents what movie a logged-in user has been presentet. (Py)
+
+    Expects JSON with movie_id, title and poster_path.
+    Gets the user from the cookie and saves the movie in the database.
+
+    Returns:
+        dict | HTTPResponse: Success message or error response.
+    """
+    username = request.get_cookie("username", secret=SECRET)
+    if not username:
+        return HTTPResponse(status=401, body="Ingen inloggad användare")
+
+    data = request.json
+    movie_id = data.get("movie_id")
+    title = data.get("title")
+    poster_path = data.get("poster_path")
+
+    if not movie_id or not title:
+        return HTTPResponse(status=400, body="Saknar id eller titel")
+
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT id FROM users WHERE username = %s", (username,))
+            user = cur.fetchone()
+            if not user:
+                return HTTPResponse(status=404, body="Användare hittades inte")
+
+            try:
+                movie_shown_to_database(user['id'], movie_id, title, poster_path)
+                return {"message": "Filmen markerad som visad"}
+            except Exception as e:
+                print("Error:", e)
+                return HTTPResponse(status=500, body="Serverfel")
+
+def movie_shown_to_database(user_id, movie_id, title, poster_path):
+    """
+    Saves the shown movie into our database to avoid showing the same movie twice. (Py)
+
+    Args:
+        user_id (int): ID of the user.
+        movie_id (int): ID of the shown movie.
+        title (str): Title of the shown movie.
+        poster_path (str): Path to the movie's poster.
+
+    This function uses ON CONFLICT DO NOTHING to avoid duplicate inserts.
+    """
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO shown_movies (user_id, movie_id, title, poster_path)
+                VALUES (%s, %s, %s, %s)
+                ON CONFLICT DO NOTHING
+            """, (user_id, movie_id, title, poster_path))
+        conn.commit()
+        print(f"===> SPARAR FILM TILL shown_movies: {movie_id}, {title}")
 
 @route('/like', method='POST')
 def like_movie():
@@ -298,7 +383,7 @@ def get_liked_movies():
                     return HTTPResponse(status=404, body="Användare hittades inte")
 
                 cursor.execute("""
-                    SELECT title, poster_path
+                    SELECT movie_id, title, poster_path
                     FROM user_movies
                     WHERE user_id = %s AND liked = TRUE
                     ORDER BY timestamp DESC
