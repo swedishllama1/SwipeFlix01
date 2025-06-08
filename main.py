@@ -298,6 +298,7 @@ def movie_shown_to_database(user_id, movie_id, title, poster_path):
 @route('/like', method='POST')
 def like_movie():
     """
+<<<<<<< Updated upstream
     Fetches the logged-in user from current cookie-session and inserts saved movies into a list. (Ellinor)
 
     This requires a logged-in user (using cookies) and movie data sent as JSON.
@@ -309,6 +310,14 @@ def like_movie():
         - 401: If the user is not logged in
         - 404: If the user is not If the user is not found in the database.
         - 500: If server error occurs.
+=======
+    Handles liking a movie and saves it to the users ''gillade filmer'' list. (Ellinor)
+
+    Fetches the logged-in user from cookies and then inserts the movie data into ''user_movies'' table with liked = TRUE.
+
+    Returns:
+        dict/HTTPResponse: JSON affermative message or error message if something goes wrong.
+>>>>>>> Stashed changes
     """
     username = request.get_cookie("username", secret=os.getenv("COOKIE_SECRET"))
     print("===> COOKIE username:", username)
@@ -392,6 +401,7 @@ def logout():
 @route('/api/liked')
 def get_liked_movies():
     """
+<<<<<<< Updated upstream
     Returns a list of movies the logged-in user has liked. (Ellinor)
 
     This requires the user to be logged in (using cookies).
@@ -402,12 +412,15 @@ def get_liked_movies():
         - 401: if the user is not logged in.
         - 404: if the user is not found.
         - 500: if a server error occurs.
+=======
+>>>>>>> Stashed changes
     Retrieves all the movies the current logged in user has marked as liked. (Ellinor)
 
     Returns: 
         Dict: JSON object with list of all the liked movies, 
         Or a error (HTTP) if user is not logged in or something fails.
     """
+<<<<<<< Updated upstream
     username = request.get_cookie("username", secret=os.getenv("COOKIE_SECRET"))
     if not username:
         return HTTPResponse(status=401, body="Not logged in")
@@ -453,6 +466,62 @@ Returns:
     if something went wrong.
 """
 
+=======
+>>>>>>> Stashed changes
+    username = request.get_cookie("username", secret=os.getenv("COOKIE_SECRET"))
+    if not username:
+        return HTTPResponse(status=401, body="Inte inloggad")
+
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT id FROM users WHERE username = %s", (username,))
+                user = cursor.fetchone()
+                if not user:
+                    return HTTPResponse(status=404, body="Användare saknas")
+
+                # Uppdaterar den gillade filmen som ''inte gillad''
+                cursor.execute("""
+<<<<<<< Updated upstream
+                    UPDATE user_movies
+                    SET liked = FALSE
+                    WHERE user_id = %s AND movie_id = %s
+                """, (user["id"], movie_id))
+=======
+                    SELECT movie_id, title, poster_path
+                    FROM user_movies
+                    WHERE user_id = %s AND liked = TRUE
+                    ORDER BY timestamp DESC
+                    """, (user["id"],))
+
+                movies = cursor.fetchall()
+>>>>>>> Stashed changes
+
+                conn.commit()
+                return {"message": "Filmen markerades som ogillad"}
+    except Exception as e:
+        print("Fel vid unlike:", e)
+        return HTTPResponse(status=500, body="Serverfel")
+    
+@route('/api/unlike/<movie_id:int>', method='DELETE')
+def unlike_movie(movie_id):
+    """
+Removes a movie from the user's "liked movies" list. (Ellinor)
+
+Endpoint: DELETE /api/unlike/<movie_id>
+
+Retrieves the logged-in user via cookies and updates the database.
+The movie with the given `movie_id` is marked as unliked but not deleted.
+The 'liked' field in the 'user_movies' table is set to false.
+
+Args:
+    movie_id (int): The ID of the movie to be removed from the liked list.
+
+Returns:
+    dict/HTTPResponse: A JSON message confirming the update, or an error message
+    if something went wrong.
+"""
+
     username = request.get_cookie("username", secret=os.getenv("COOKIE_SECRET"))
     if not username:
         return HTTPResponse(status=401, body="Inte inloggad")
@@ -477,6 +546,7 @@ Returns:
     except Exception as e:
         print("Fel vid unlike:", e)
         return HTTPResponse(status=500, body="Serverfel")
+
 
 @route('/static/<filename:path>')
 @route('/static/<filename>')

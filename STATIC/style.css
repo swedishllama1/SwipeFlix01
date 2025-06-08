@@ -239,6 +239,13 @@ background-color: transparent;
   border: 2px solid #ccc;
 }
 
+.genre-item.active-genre {
+  background-color: #6a6aff;
+  font-weight: bold;
+  color: #fff;
+  border: 2px solid #ccc;
+}
+
 /*Registrering och logga in sida styling */
 #auth-box{
   text-align: center;
