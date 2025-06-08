@@ -32,3 +32,28 @@
 
     3. Installera beroenden
     pip install -r requirements.txt
+
+# Skapa tabellerna i pgAdmin 4
+    Users
+    CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    email TEXT NOT NULL UNIQUE,
+    username TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL
+    );
+
+    User_movies
+    CREATE TABLE user_movies (
+    id int NOT NULL DEFAULT nextval('user_movies_id_seq'::regclass),
+    user_id INT,
+    move_id INT NOT NULL,
+    title text COLLATE pg_catalog."default",
+    poster_path text COLLATE pg_catalog."default",
+    liked boolean NOT NULL,
+    "timestamp" timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT user_movies_pkey PRIMARY KEY (id),
+    CONSTRAINT user_movies_user_id_fkey FOREIGN KEY (user_id)
+        REFERENCES public.users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+    )
