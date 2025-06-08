@@ -1,39 +1,39 @@
 # SwipeFlix
-**SwipeFlix** är en filmrekommendationsapp där användare kan swipea höger för att gilla filmer likt Tinder. Applikationen bygger på data från [TMDb API](https://www.themoviedb.org/documentation/api) och användare kan skapa egna listor över sina favoritfilmer.
+**SwipeFlix** is a movie recommendation app where users can swipe right to like movies, similar to Tinder. The app is based on data from the [TMDb API](https://www.themoviedb.org/documentation/api) and users can create their own lists of favorite movies.
 
 # Funktioner
-* Användarinloggning med e-post, användarnamn och lösenord
-* Hämtar filmdata från TMDb API
-* Svepfunktion för att gilla eller hoppa över filmer
-* Sparar gillade filmer i användarspecifika listor
-* Backend med PostgreSQL för datalagring
-* Lösenord ska hashas med bcrypt
+* User login with email, username, and password
+* Fetches movie data from the TMDb API
+* Swipe functionality to like or skip movies
+* Saves liked movies in user-specific lists
+* Backend with PostgreSQL for data storage
+* Passwords are hashed using bcrypt
 
 # Teknik
 * Frontend: HTML, CSS, JavaScript
 * Backend: Python (Bottle)
-* Databas: PostgreSQL
+* Database: PostgreSQL
 * API: TMDb
-* Hantering av hemligheter: `python-dotenv`
-* Paket: `psycopg2`, `bcrypt`, `requests`
+* Secret management: `python-dotenv`
+* Packages: `psycopg2`, `bcrypt`, `requests`
 
 # Installation
-    1. **Klona projektet:**
-    * https://github.com/swedishllama1/SwipeFlix01
+    1. **Clone the project**
+    https://github.com/swedishllama1/SwipeFlix01
 
-    2. Skapa en .env fil med:
+    2. Create a .env file with the following:
     TMDB_API_KEY=tmdb_nyckel
     DB_NAME=din_databas
     DB_USER=användarnamn
     DB_PASSWORD=lösenord
     DB_HOST=host.adress
     DB_PORT=5432
-    *Dessa uppgifter kan erhållas separat från gruppen*
+    *These credentials can be obtained separately from the group.*
 
-    3. Installera beroenden
+    3. Install dependencies
     pip install -r requirements.txt
 
-# Skapa tabellerna i pgAdmin 4
+# Create tables in pgAdmin 4
     Users
     CREATE TABLE users (
     id SERIAL PRIMARY KEY,
@@ -57,3 +57,6 @@
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
     )
+    
+    (User_movies table was fetched by right-clicking the table > Scripts > Create Script
+    Therefore some metadata has been added)
