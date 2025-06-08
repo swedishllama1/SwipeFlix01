@@ -11,7 +11,7 @@ body {
   min-height: 100vh;
 }
 
-/*Huvudapp och bild på filmerna*/
+/*Main app and movie display*/
 #app {
   text-align: center;
   max-width: 360px;
@@ -43,7 +43,7 @@ body {
   transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
-/*Kontroller för swipeknapparna*/
+/*Controls for swipe buttons*/
 #controls {
   margin-top: 20px;
   display: flex;
@@ -67,7 +67,7 @@ body {
   background-color: #555;
 }
 
-/*Ruta till filminformation*/
+/*Box for movie information*/
 #movie-info {
   margin-top: 20px;
   background: #2a2a40;
@@ -100,7 +100,7 @@ body {
   opacity: 1;
 }
 
-/*Användarmeny och logga in/ut*/
+/*User menu and login/logout*/
 #user-menu {
 position:fixed;
 right: 20px;
@@ -186,7 +186,7 @@ background-color: transparent;
   display: flex;
 }
 
-/*Välja genrer*/
+/*Pick genre*/
 #genre-menu {
   position: absolute;
   top: 20px;
@@ -253,7 +253,7 @@ background-color: transparent;
   border: 2px solid #ccc;
 }
 
-/*Registrering och logga in sida styling */
+/*User menu and login/logout*/
 #auth-box{
   text-align: center;
   display: flex;
@@ -287,7 +287,7 @@ margin-bottom: 20px;
   cursor: pointer;
 }
 
-/*Reg-box styling*/
+/*Registration and login page styling*/
 #reg-box{
   text-align: center;
 }
@@ -319,7 +319,7 @@ margin-bottom: 20px;
   cursor: pointer;
 }
 
-/*Profil och ''gillade filmer''*/
+/*Profile and "liked movies"*/
 #profile-page{
   align-items: flex-start;
   justify-content: flex-start;
