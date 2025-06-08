@@ -53,7 +53,8 @@ if __name__ == "__main__":
 
 @route('/')
 def root():
-    """Renders SwipeFlix's homepage (Alma)
+    """
+    Renders SwipeFlix's homepage (Alma)
     
     Returns:
         str: Rendered HTML content of the 'index' template.
@@ -63,7 +64,8 @@ def root():
 
 @route('/api/genres')
 def get_genres():
-    """Fetches a list of movie genres from the TMDB API (Alma)
+    """
+    Fetches a list of movie genres from the TMDB API (Alma)
     
     Returns:
         dict: A JSON-file containing data of the genres from TMDB
@@ -78,7 +80,8 @@ def get_genres():
 
 @route('/api/movies')
 def get_movies():
-    """Fetches movies from the TMDB API by genre or popularity (Alma)
+    """
+    Fetches movies from the TMDB API by genre or popularity (Alma)
     
     Query parameters:
         genre_id: The genre ID to filter movies by.
@@ -110,7 +113,8 @@ def get_movies():
 
 @route('/reg_page')
 def reg_page():
-    """ Renders the registration page containing a form. (Py)
+    """
+    Renders the registration page containing a form. (Py)
 
     Returns:
         str: Rendered HTML content of the registration ('reg_page') template.
@@ -119,7 +123,8 @@ def reg_page():
 
 @route('/login_page')
 def login_page():
-    """ Renders the login page containing a form. (Py)
+    """
+    Renders the login page containing a form. (Py)
 
     Returns:
         str: Rendered HTML content of the login ('login_page') template.
@@ -128,7 +133,8 @@ def login_page():
 
 @route('/register', method=["GET", "POST"])
 def register_user_input():
-    """Handels user registration via GET and POST requests (Alma)
+    """
+    Handles user registration via GET and POST requests (Alma)
     
     GET: Renders the registration form where the user enters their email, chosen username and password.
     POST: Collects user input, hashes the password and saves the user to the database.
@@ -164,7 +170,8 @@ def register_user_input():
 
 @route('/login', method=["GET", "POST"])
 def login():
-    """Handles user login with GET and POST form requests (Py).
+    """
+    Handles user login with GET and POST form requests (Py).
     This route renders a login form and processes user authentication.
 
     GET: Renders the login form where the user can enter email and password.
@@ -200,58 +207,73 @@ def login():
                 else:
                     return "Incorrect email or password"
     except psycopg2.Error as e:
-        print(f"Databasfel vid inloggning: {e}")
+        print(f"Database error at login: {e}")
         return template('login_page')
     
 
 @route('/like', method='POST')
 def like_movie():
+    """
+    Fetches the logged-in user from current cookie-session and inserts saved movies into a list. (Ellinor)
+
+    This requires a logged-in user (using cookies) and movie data sent as JSON.
+    The JSON data must include 'id' and 'title' with 'poster_path'.
+
+    Returns:
+        - 200: If the movie was saved successfully.
+        - 400: If required data is missing.
+        - 401: If the user is not logged in
+        - 404: If the user is not If the user is not found in the database.
+        - 500: If server error occurs.
+    
+    """
     username = request.get_cookie("username", secret=os.getenv("COOKIE_SECRET"))
     print("===> COOKIE username:", username)
 
     if not username:
-        return HTTPResponse(status=401, body="Ingen användare inloggad")
+        return HTTPResponse(status=401, body="No user logged in")
 
     data = request.json
-    print("===> INKOMMANDE JSON:", data)
+    print("===> INCOMING JSON:", data)
 
     movie_id = data.get("id")
     title = data.get("title")
     poster_path = data.get("poster_path")
 
     if not movie_id or not title:
-        print("===> Fel: saknar id eller title")
+        print("===> Error: missing ID or title")
         return HTTPResponse(status=400, body="Incomplete movie data")
 
     try:
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
-                # Hämta användarens ID
+                # Fetch user ID
                 cursor.execute("SELECT id FROM users WHERE username = %s", (username,))
                 user = cursor.fetchone()
                 print("===> User från DB:", user)
 
                 if not user or not user.get("id"):
-                    return HTTPResponse(status=404, body="Användare saknas")
+                    return HTTPResponse(status=404, body="User missing")
 
-                # Spara filmen
+                # Save the movie into user_movies
                 cursor.execute("""
                     INSERT INTO user_movies (user_id, movie_id, title, poster_path, liked)
                     VALUES (%s, %s, %s, %s, TRUE)
                 """, (user["id"], movie_id, title, poster_path))
 
                 conn.commit()
-                print("===> Film sparad")
+                print("===> Movie saved")
 
-        return {"message": "Film gillad och sparad"}
+        return {"message": "Movie liked and saved"}
     except Exception as e:
-        print("===> Fel vid INSERT:", e)
+        print("===> Error at INSERT:", e)
         return HTTPResponse(status=500, body="Server error")
 
 
 @route('/user_profile')
 def user_profile():
-    """ Renders the user profile containing user information and liked movies. (Py)
+    """
+    Renders the user profile containing user information and liked movies. (Py)
 
     Returns:
         str: Rendered HTML content of the user profile ('user_profile') template.
@@ -275,7 +297,8 @@ def user_profile():
 
 @route('/logout')
 def logout():
-    """Logs out the user by deleting the username cookie and redirects to the homepage. (Alma)
+    """
+    Logs out the user by deleting the username cookie and redirects to the homepage. (Alma)
     
     Returns:
         str: A redirect that renders the homepage as the user logs out.
@@ -285,9 +308,21 @@ def logout():
 
 @route('/api/liked')
 def get_liked_movies():
+    """
+    Returns a list of movies the logged-in user has liked. (Ellinor)
+
+    This requires the user to be logged in (using cookies).
+    Fetches movie titles and poster paths from the database in chronological liked order.
+
+    Returns:
+        - JSON with liked movies if successful.
+        - 401: if the user is not logged in.
+        - 404: if the user is not found.
+        - 500: if a server error occurs.
+    """
     username = request.get_cookie("username", secret=os.getenv("COOKIE_SECRET"))
     if not username:
-        return HTTPResponse(status=401, body="Inte inloggad")
+        return HTTPResponse(status=401, body="Not logged in")
 
     try:
         with get_db_connection() as conn:
@@ -295,7 +330,7 @@ def get_liked_movies():
                 cursor.execute("SELECT id FROM users WHERE username = %s", (username,))
                 user = cursor.fetchone()
                 if not user:
-                    return HTTPResponse(status=404, body="Användare hittades inte")
+                    return HTTPResponse(status=404, body="User not found")
 
                 cursor.execute("""
                     SELECT title, poster_path
@@ -307,13 +342,14 @@ def get_liked_movies():
 
         return {"movies": movies}
     except Exception as e:
-        print("Fel vid hämtning av gillade filmer:", e)
-        return HTTPResponse(status=500, body="Serverfel")
+        print("Error when fetching liked movies:", e)
+        return HTTPResponse(status=500, body="Server error")
 
 @route('/static/<filename:path>')
 @route('/static/<filename>')
 def static_files(filename):
-    """Sends back a static file (CSS, JavaScript or image)
+    """
+    Sends back a static file (CSS, JavaScript or image)
     
     Args:
         filename (str): The name of the file the user is trying to access.
