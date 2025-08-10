@@ -22,16 +22,19 @@
     https://github.com/swedishllama1/SwipeFlix01
 
     2. Create a .env file with the following:
-    TMDB_API_KEY=tmdb_nyckel
-    DB_NAME=din_databas
-    DB_USER=användarnamn
-    DB_PASSWORD=lösenord
+    TMDB_API_KEY=tmdb_key
+    DB_NAME=your_database
+    DB_USER=username
+    DB_PASSWORD=password
     DB_HOST=host.adress
     DB_PORT=5432
-    *These credentials can be obtained separately from the group.*
+    *These credentials are to be obtained separately from the group to maintain the security of the credentials. They must be manually switched out by the user to the correct credentials in order for the program to function. Please see the attached document titled "ENV INFO".*
 
     3. Install dependencies
     pip install -r requirements.txt
+    *This command could possibly look different for each individuall user, for example, for group member Alma - the command looks like this: py -m pip install -r requirements.txt
+    
+    Should any of the packages fail to install, consider looking up permissions and instructions online for the respective packages.*
 
 # Create tables in pgAdmin 4
     Users
