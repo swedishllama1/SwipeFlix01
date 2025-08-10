@@ -92,3 +92,5 @@
     
     (The tables were fetched by right-clicking the table > Scripts > Create Script in pgAdmin4
     Therefore some metadata has been added, which is why the tables may look funky.)
+
+# Run the program by navigating to the "main.py" file in Visual Studio Code and pressing "Run Python file", thereafter observe the command-box at the bottom of the screen in the same program, and open the link: "http://localhost:8090/" by holding the Ctrl button and clicking on it with your mouse.
