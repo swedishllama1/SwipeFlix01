@@ -37,7 +37,7 @@
     Should any of the packages fail to install, consider looking up permissions and instructions online for the respective packages.*
 
 # Create tables in pgAdmin 4
-    Users
+1)    Users
     CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     email TEXT NOT NULL UNIQUE,
@@ -45,7 +45,7 @@
     password_hash TEXT NOT NULL
     );
 
-    User_movies
+2)    User_movies
     CREATE TABLE user_movies (
     id int NOT NULL DEFAULT nextval('user_movies_id_seq'::regclass),
     user_id INT,
@@ -60,6 +60,35 @@
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
     )
+
+3)    Liked_movies
+    CREATE TABLE liked_movies(
+    id integer NOT NULL DEFAULT nextval('liked_movies_id_seq'::regclass),
+    user_id integer NOT NULL,
+    movie_id integer NOT NULL,
+    liked_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT liked_movies_pkey PRIMARY KEY (id),
+    CONSTRAINT liked_movies_user_id_fkey FOREIGN KEY (user_id)
+        REFERENCES public.users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        )
     
-    (User_movies table was fetched by right-clicking the table > Scripts > Create Script
-    Therefore some metadata has been added)
+4)    Shown_movies
+    CREATE TABLE shown_movies(
+    id integer NOT NULL DEFAULT nextval('shown_movies_id_seq'::regclass),
+    user_id integer NOT NULL,
+    movie_id integer NOT NULL,
+    "timestamp" timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    poster_path text COLLATE pg_catalog."default",
+    title text COLLATE pg_catalog."default",
+    CONSTRAINT shown_movies_pkey PRIMARY KEY (id),
+    CONSTRAINT shown_movies_user_id_movie_id_key UNIQUE (user_id, movie_id),
+    CONSTRAINT shown_movies_user_id_fkey FOREIGN KEY (user_id)
+        REFERENCES public.users (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+)
+    
+    (The tables were fetched by right-clicking the table > Scripts > Create Script in pgAdmin4
+    Therefore some metadata has been added, which is why the tables may look funky.)
